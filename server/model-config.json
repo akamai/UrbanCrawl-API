@@ -14,7 +14,7 @@
     ]
   },
   "city": {
-    "dataSource": null,
+    "dataSource": "db_name",
     "public": true
   }
 }
