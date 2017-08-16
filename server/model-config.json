@@ -14,7 +14,7 @@
     ]
   },
   "city": {
-    "dataSource": null,
+    "dataSource": "terraplanet-db-heroku",
     "public": true
   }
 }
