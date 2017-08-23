@@ -21,13 +21,13 @@
       "type": "number",
       "required": true
     },
-    "thumb-url": {
+    "thumburl": {
       "type": "string"
     },
     "description": {
       "type": "string"
     },
-    "create-date": {
+    "createdate": {
       "type": "date",
       "required": true
     },
