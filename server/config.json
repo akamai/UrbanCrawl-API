@@ -20,7 +20,7 @@
     "cors": false,
     "sharedMethods": {
     "*": false,
-    "find": true
+    "getAllCities": true
     }
   }
 }
