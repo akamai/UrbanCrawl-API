@@ -7,7 +7,7 @@ City.getAllCities = function(cb) {
     City.find({fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true} },
     	function(err, result){
 
-    		//TODO : Handle errors
+    	//TODO : Handle errors
     	cb(null, result);	
     });
 
@@ -31,11 +31,18 @@ City.getAllCities = function(cb) {
 
   City.getCityDetails = function(idToFind, next) {
 
+  	var places;
+
+  	City.find(null, function(err, result){
+  		places = result;
+  	});
+
     City.find({where: {id: idToFind}, fields: {createdate: false, lastUpdated: false} },
     	function(err, result){
+    		result[0].places = places;
 
     		//TODO : Handle errors
-    	next(null, result);	
+    		next(null, result[0]);	
     });
 
   };
