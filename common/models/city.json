@@ -34,6 +34,32 @@
     "lastUpdated": {
       "type": "date",
       "required": true
+    },
+    "heroimage": {
+      "type": "string",
+      "required": true
+    },
+    "budget": {
+      "type": "string"
+    },
+    "besttime": {
+      "type": "string",
+      "required": true
+    },
+    "language": {
+      "type": "string",
+      "required": true
+    },
+    "population": {
+      "type": "string",
+      "required": true
+    },
+    "traveladvice": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string",
+      "required": true
     }
   },
   "validations": [],
