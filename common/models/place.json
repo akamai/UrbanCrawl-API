@@ -41,7 +41,13 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "city": {
+      "type": "belongsTo",
+      "model": "city",
+      "foreignKey": "cityid"
+    }
+  },
   "acls": [],
   "methods": {}
 }

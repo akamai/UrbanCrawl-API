@@ -37,9 +37,9 @@ City.getAllCities = function(cb) {
   		places = result;
   	});
 
-    City.find({where: {id: idToFind}, fields: {createdate: false, lastUpdated: false} },
+    City.find({include: 'posts', where: {id: idToFind}, fields: {createdate: false, lastupdated: false} },
     	function(err, result){
-    		result[0].places = places;
+    		// result[0].places = places;
 
     		//TODO : Handle errors
     		next(null, result[0]);	

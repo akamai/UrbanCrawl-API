@@ -31,7 +31,7 @@
       "type": "date",
       "required": true
     },
-    "lastUpdated": {
+    "lastupdated": {
       "type": "date",
       "required": true
     },
@@ -63,7 +63,13 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "places": {
+      "type": "hasMany",
+      "model": "place",
+      "foreignKey": ""
+    }
+  },
   "acls": [],
   "methods": {}
 }
