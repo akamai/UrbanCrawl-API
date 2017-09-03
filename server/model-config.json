@@ -16,5 +16,9 @@
   "city": {
     "dataSource": "db_name",
     "public": true
+  },
+  "place": {
+    "dataSource": "db_name",
+    "public": true
   }
 }

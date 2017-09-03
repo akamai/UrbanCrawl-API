@@ -1,0 +1,47 @@
+{
+  "name": "place",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "heroimage": {
+      "type": "string"
+    },
+    "herovideo": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "numimages": {
+      "type": "number",
+      "required": true
+    },
+    "timings": {
+      "type": "string"
+    },
+    "cityid": {
+      "type": "number",
+      "required": true
+    },
+    "createdate": {
+      "type": "date",
+      "required": true
+    },
+    "lastupdated": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
