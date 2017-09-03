@@ -19,9 +19,10 @@
     },
     "cors": false,
     "sharedMethods": {
-      "*": true,
+      "*": false,
       "getAllCities": true,
-      "getCityDetails": true
+      "getCityDetails": true,
+      "getAllPlacesOfCity": true
     }
   }
 }
