@@ -48,14 +48,6 @@
       "foreignKey": "cityid"
     }
   },
-  "acls": [{
-    "permission": "DENY",
-    "property": "__create__places"
-    },
-    {
-    "permission": "DENY",
-    "property": "__count__places"
-    }
-  ],
+  "acls": [],
   "methods": {}
 }
