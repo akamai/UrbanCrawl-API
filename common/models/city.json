@@ -70,6 +70,15 @@
       "foreignKey": ""
     }
   },
-  "acls": [],
+  "acls": [
+    {
+    "permission": "DENY",
+    "property": "__create__places"
+    },
+    {
+    "permission": "DENY",
+    "property": "__count__places"
+    }
+  ],
   "methods": {}
 }
