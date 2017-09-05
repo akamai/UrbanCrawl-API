@@ -1,5 +1,7 @@
 'use strict';
 
+var app = require('../../server/server');
+
 module.exports = function(City) {
 
 City.getAllCities = function(cb) {
@@ -31,15 +33,22 @@ City.getAllCities = function(cb) {
 
   City.getCityDetails = function(idToFind, next) {
 
-  	var places;
+  	var placesOfCity;
 
-  	City.find(null, function(err, result){
-  		places = result;
+  	if(idToFind === undefined){
+  		// console.log("undefined "+idToFind);
+  	}else{
+  		// console.log("defined "+idToFind);
+  	}
+
+  	City.app.models.Place.find({where: {cityid: idToFind}, fields: {createdate: false, lastupdated: false, cityId: false} },
+  		function(err, result){
+  		placesOfCity = result;
   	});
 
-    City.find({include: 'posts', where: {id: idToFind}, fields: {createdate: false, lastupdated: false} },
+    City.find({where: {id: idToFind}, fields: {createdate: false, lastupdated: false}, include: 'Place' },
     	function(err, result){
-    		// result[0].places = places;
+    		result[0].places = placesOfCity;
 
     		//TODO : Handle errors
     		next(null, result[0]);	
