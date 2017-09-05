@@ -8,9 +8,14 @@ City.getAllCities = function(cb) {
 
     City.find({fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true} },
     	function(err, result){
-
-    	//TODO : Handle errors
-    	cb(null, result);	
+    		console.log("Error: "+err);
+    		if(!err){
+    			cb(null, result);	
+    		}else{
+				var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+		  		error.status = 500;
+		  		cb(error, null);
+    		}
     });
 
   };
@@ -31,28 +36,37 @@ City.getAllCities = function(cb) {
   );
 
 
-  City.getCityDetails = function(idToFind, next) {
+  City.getCityDetails = function(idToFind, cb) {
 
   	var placesOfCity;
 
   	if(idToFind === undefined){
-  		// console.log("undefined "+idToFind);
+  		var error = new Error("No id was supplied. You must supply a cidy id");
+  		error.status = 404;
+  		cb(error, null);
   	}else{
-  		// console.log("defined "+idToFind);
-  	}
 
-  	City.app.models.Place.find({where: {cityid: idToFind}, fields: {createdate: false, lastupdated: false, cityId: false} },
+  		City.app.models.Place.find({where: {cityid: idToFind}, fields: {createdate: false, lastupdated: false, cityId: false} },
   		function(err, result){
-  		placesOfCity = result;
-  	});
+  			//TODO : ID is sent, but nothing found from that ID in place db
+  			placesOfCity = result;
+  		});
 
-    City.find({where: {id: idToFind}, fields: {createdate: false, lastupdated: false}, include: 'Place' },
+    	City.find({where: {id: idToFind}, fields: {createdate: false, lastupdated: false}, include: 'Place' },
     	function(err, result){
+
+    		//TODO : ID is sent, but no city found from this id
+
+    		console.log("Error: "+err);
+
     		result[0].places = placesOfCity;
 
     		//TODO : Handle errors
-    		next(null, result[0]);	
+    		cb(null, result[0]);	
     });
+  	}
+
+  	
 
   };
 
