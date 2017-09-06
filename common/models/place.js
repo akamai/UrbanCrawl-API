@@ -2,15 +2,31 @@
 
 module.exports = function(Place) {
 
-Place.getAllPlacesOfCity = function(idToFind, next) {
+Place.getAllPlacesOfCity = function(idToFind, cb) {
 
-    Place.find({where: {cityid: idToFind}, fields: {createdate: false, lastupdated: false, cityid: false} },
+	if(idToFind === undefined){
+  		var error = new Error("No id was supplied. You must supply a cidy id");
+  		error.status = 404;
+  		cb(error, null);
+  	}else{
+  		Place.find({where: {cityid: idToFind}, fields: {createdate: false, lastupdated: false, cityid: false} },
     	function(err, result){
 
-    		//TODO : Handle errors
-    		next(null, result);	
+    		if(!err){
+				if(result.length > 0){
+					cb(null, result);
+				}else{
+					var error = new Error("Didn't find anything with this id");
+			  		error.status = 404;
+			  		cb(error, null);
+				}
+			}else{
+				var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+		  		error.status = 500;
+		  		cb(error, null);
+			}
     });
-
+  	}
   };
 
 
