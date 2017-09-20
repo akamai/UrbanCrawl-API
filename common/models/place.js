@@ -5,7 +5,7 @@ module.exports = function(Place) {
 Place.getAllPlacesOfCity = function(idToFind, cb) {
 
 	if(idToFind === undefined){
-  		var error = new Error("No id was supplied. You must supply a cidy id");
+  		var error = new Error("No id was supplied. You must supply a city id");
   		error.status = 404;
   		cb(error, null);
   	}else{
@@ -54,7 +54,7 @@ Place.getAllPlacesOfCity = function(idToFind, cb) {
   Place.getPlaceDetails = function(idToFind, cb) {
 
   if(idToFind === undefined){
-      var error = new Error("No id was supplied. You must supply a cidy id");
+      var error = new Error("No id was supplied. You must supply a place id");
       error.status = 404;
       cb(error, null);
     }else{
