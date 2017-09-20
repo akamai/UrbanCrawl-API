@@ -23,7 +23,8 @@
       "getAllCities": true,
       "getCityDetails": true,
       "getAllPlacesOfCity": true,
-      "search": true
+      "search": true,
+      "getPlaceDetails": true
     }
   }
 }
