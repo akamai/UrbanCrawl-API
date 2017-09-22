@@ -20,5 +20,9 @@
   "place": {
     "dataSource": "terraplanet-db-heroku",
     "public": true
+  },
+  "media": {
+    "dataSource": "terraplanet-db-heroku",
+    "public": true
   }
 }
