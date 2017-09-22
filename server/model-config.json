@@ -20,5 +20,9 @@
   "place": {
     "dataSource": "db_name",
     "public": true
+  },
+  "media": {
+    "dataSource": "db_name",
+    "public": true
   }
 }

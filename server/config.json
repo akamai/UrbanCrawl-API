@@ -24,7 +24,9 @@
       "getCityDetails": true,
       "getAllPlacesOfCity": true,
       "search": true,
-      "getPlaceDetails": true
+      "getPlaceDetails": true,
+      "getAllMediaByPlaceId": true,
+      "getAllMediaByCityId": true
     }
   }
 }
