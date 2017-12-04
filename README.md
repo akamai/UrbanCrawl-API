@@ -10,6 +10,7 @@ Urban Crawl's apps' source code is available here:
 The API exists here : [http://terraplanet.herokuapp.com/explorer/](http://terraplanet.herokuapp.com/explorer/)
 
 ###How to get started###
+
 If you're basing this off of your own Loopback instance, look into following folders:
 
 - common/models - for all model related code  
@@ -17,6 +18,9 @@ If you're basing this off of your own Loopback instance, look into following fol
 - server/datasources.json - for database information
 - server/config.json - for server configuration and REST API endpoints
 - SQLDump - for a dump of the live database
+
+###Deployment###
+- `https://git.heroku.com/terraplanet.git` - The URL to push and deploy on heroku. You need adequate permissions before you can deploy. Talk to the author listed below.
 
 ### Who to contact ###
 Contact any of the following:
