@@ -1,6 +1,6 @@
-##Urban Crawl (Terra Planet) Backend##
+## Urban Crawl (Code named : Terra Planet) Backend ##
 
-Based on Loopback.js, this is the API that powers Urban Crawl iOS and Android apps. This is hosted on DevRel team's Heroku account
+Based on Loopback.js, this is the API that powers Urban Crawl iOS and Android apps. This is hosted on DevRel team's Heroku account.
 
 Urban Crawl's apps' source code is available here:
 
@@ -9,7 +9,7 @@ Urban Crawl's apps' source code is available here:
 
 
 
-###How to get started###
+### How to get started ###
 
 If you're basing this off of your own Loopback instance, look into following folders:
 
@@ -19,7 +19,7 @@ If you're basing this off of your own Loopback instance, look into following fol
 - server/config.json - for server configuration and REST API endpoints
 - SQLDump - for a dump of the live database
 
-###Deployment###
+### Deployment ###
 - [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ### Who to contact ###
