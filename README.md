@@ -10,6 +10,7 @@ Urban Crawl's apps' source code is available here:
 
 
 ###How to get started###
+
 If you're basing this off of your own Loopback instance, look into following folders:
 
 - common/models - for all model related code  
@@ -17,6 +18,9 @@ If you're basing this off of your own Loopback instance, look into following fol
 - server/datasources.json - for database information
 - server/config.json - for server configuration and REST API endpoints
 - SQLDump - for a dump of the live database
+
+###Deployment###
+- [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ### Who to contact ###
 Contact any of the following:
