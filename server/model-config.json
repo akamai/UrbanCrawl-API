@@ -13,6 +13,29 @@
       "./mixins"
     ]
   },
+  "User": {
+    "dataSource": "db_name",
+    "public": true
+  },
+  "AccessToken": {
+    "dataSource": "db_name",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "db_name",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "db_name",
+    "public": false,
+    "options": {
+      "strictObjectIDCoercion": true
+    }
+  },
+  "Role": {
+    "dataSource": "db_name",
+    "public": false
+  },
   "city": {
     "dataSource": "db_name",
     "public": true
