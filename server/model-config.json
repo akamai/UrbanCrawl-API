@@ -13,6 +13,29 @@
       "./mixins"
     ]
   },
+  "User": {
+    "dataSource": "terraplanet-db-heroku",
+    "public": true
+  },
+  "AccessToken": {
+    "dataSource": "terraplanet-db-heroku",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "terraplanet-db-heroku",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "terraplanet-db-heroku",
+    "public": false,
+    "options": {
+      "strictObjectIDCoercion": true
+    }
+  },
+  "Role": {
+    "dataSource": "terraplanet-db-heroku",
+    "public": false
+  },
   "city": {
     "dataSource": "terraplanet-db-heroku",
     "public": true
