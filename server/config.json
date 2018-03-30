@@ -19,7 +19,7 @@
     },
     "cors": false,
     "sharedMethods": {
-      "*": false,
+      "*": true,
       "getAllCities": true,
       "getCityDetails": true,
       "getAllPlacesOfCity": true,
