@@ -23,7 +23,7 @@ City.disableRemoteMethod('__get__places', false );
 //--------- Get All Cities ------------
 City.getAllCities = function(cb) {
 
-	City.find({fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true} },
+	City.find({fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true} },
 		function(err, result){
 			if(!err){
 				cb(null, result);	
@@ -122,7 +122,7 @@ City.search = function(keyword, cb) {
 
     	City.find({
     		where: {name: {like: "%"+keyword+"%"}}, 
-    		fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true}
+    		fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true}
     	},
     	function(err, result){
 

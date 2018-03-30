@@ -60,6 +60,10 @@
     "currency": {
       "type": "string",
       "required": true
+    },
+    "tour_price": {
+      "type": "number",
+      "required": true
     }
   },
   "validations": [],
