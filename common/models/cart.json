@@ -1,0 +1,54 @@
+{
+  "name": "cart",
+  "plural": "cart",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "cityid": {
+      "type": "number",
+      "required": true
+    },
+    "userid": {
+      "type": "number",
+      "required": true
+    },
+    "thumburl": {
+      "type": "string",
+      "required": true
+    },
+    "unitprice": {
+      "type": "number",
+      "required": true
+    },
+    "quantity": {
+      "type": "number",
+      "required": true
+    },
+    "totalprice": {
+      "type": "number",
+      "required": true
+    },
+    "createdate": {
+      "type": "date",
+      "required": true
+    },
+    "updatedate": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}

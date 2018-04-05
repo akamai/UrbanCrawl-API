@@ -15,7 +15,14 @@
   },
   "User": {
     "dataSource": "db_name",
-    "public": true
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false
+        }
+      }
+    }
   },
   "AccessToken": {
     "dataSource": "db_name",
@@ -38,14 +45,56 @@
   },
   "city": {
     "dataSource": "db_name",
-    "public": true
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "getAllCities": true,
+          "getCityDetails": true,
+          "search": true
+        }
+      }
+    }
   },
   "place": {
     "dataSource": "db_name",
-    "public": true
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "getAllPlacesOfCity": true,
+          "getPlaceDetails": true
+        }
+      }
+    }
   },
   "media": {
     "dataSource": "db_name",
-    "public": true
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "getAllMediaByPlaceId": true,
+          "getAllMediaByCityId": true
+        }
+      }
+    }
+  },
+  "cart": {
+    "dataSource": "db_name",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "addToCart": true,
+          "updateCart": true,
+          "getCart": true
+        }
+      }
+    }
   }
 }

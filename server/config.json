@@ -19,14 +19,7 @@
     },
     "cors": false,
     "sharedMethods": {
-      "*": true,
-      "getAllCities": true,
-      "getCityDetails": true,
-      "getAllPlacesOfCity": true,
-      "search": true,
-      "getPlaceDetails": true,
-      "getAllMediaByPlaceId": true,
-      "getAllMediaByCityId": true
+      "*": false
     }
   }
 }
