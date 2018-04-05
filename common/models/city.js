@@ -2,15 +2,12 @@
 
 module.exports = function(City) {
 
-/*
-Disabling remot method that Loopback automatically exposes
-after creating a new relation.
-See : https://loopback.io/doc/en/lb3/Accessing-related-models.html
-See : https://github.com/strongloop/loopback/issues/651#issuecomment-167111395
-
-There could be a better way of doing this which I haven't found yet
-*/
-
+/**
+disableRemoteMethod gives a deprecation warning as of now, but it's
+suggested alternative, disableRemoteMethodByName doesn't seem to work.
+So sticking with disableRemoteMethod as of now
+**/
+  
 City.disableRemoteMethod('__count__places', false );
 City.disableRemoteMethod('__create__places', false );
 City.disableRemoteMethod('__delete__places', false );
@@ -66,8 +63,7 @@ City.getCityDetails = function(idToFind, cb) {
     		where: {id: idToFind}, 
     		fields: {createdate: false, lastupdated: false}, 
     		include: {relation: 'places', scope: {fields: ["id", "name", "heroimage", "herovideo", "description", "numimages", "timings"]}}
-    	},
-    	function(err, result){
+    	}, function(err, result){
 
 			if(!err){
 				if(result.length > 0){

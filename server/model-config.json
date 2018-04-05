@@ -15,7 +15,14 @@
   },
   "User": {
     "dataSource": "terraplanet-db-heroku",
-    "public": true
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false
+        }
+      }
+    }
   },
   "AccessToken": {
     "dataSource": "terraplanet-db-heroku",
@@ -38,14 +45,56 @@
   },
   "city": {
     "dataSource": "terraplanet-db-heroku",
-    "public": true
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "getAllCities": true,
+          "getCityDetails": true,
+          "search": true
+        }
+      }
+    }
   },
   "place": {
     "dataSource": "terraplanet-db-heroku",
-    "public": true
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "getAllPlacesOfCity": true,
+          "getPlaceDetails": true
+        }
+      }
+    }
   },
   "media": {
     "dataSource": "terraplanet-db-heroku",
-    "public": true
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "getAllMediaByPlaceId": true,
+          "getAllMediaByCityId": true
+        }
+      }
+    }
+  },
+  "cart": {
+    "dataSource": "terraplanet-db-heroku",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "addToCart": true,
+          "updateCart": true,
+          "getCart": true
+        }
+      }
+    }
   }
 }
