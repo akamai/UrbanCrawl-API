@@ -3,75 +3,104 @@
 var app = require('../../server/server');
 
 var unitprice;
+var moment = require("moment");
 
+//--------------------- ADD TO CART ------------
 module.exports = function(Cart) {
 
 	Cart.addToCart = function(body, cb){
 		console.log("##### cityId: "+body.cityid+", userID: "+body.userid+", Qty: "+body.qty);
-		
+		if(body === undefined || 
+			body.cityid === undefined || 
+			body.userid === undefined ||
+			body.qty === undefined){
+			
+			var error = new Error("Supplied parameters are insufficient.");
+	  		error.status = 400;
+	  		cb(error, null);
+	  		return;
+		}
 		var City = app.models.City;
 
 		City.find({
 			where: {id: body.cityid}, 
 			fields: {id:true, thumburl: true, tour_price: true}
 		},
-		function(err, result){
-			console.log("######## CITY RESULT ", result);
+		function(err, cityResult){
+			console.log("######## CITY RESULT ", cityResult);
 			if(!err){
-				unitprice = result[0].tour_price;
-				Cart.updateAll({cityid: body.cityid, userid: body.userid},
-							{quantity: body.qty, totalprice: result[0].tour_price*body.qty},
-							function(err, info){
-								console.log("#### UPDATE RESULT ", info);
-								Cart.find({
-									fields: {createdate:false, updatedate: false}
-								},
-								function(err, result){
+				unitprice = cityResult[0].tour_price;
+				Cart.find({
+					where: {cityid: body.cityid, userid: body.userid}
+				}, function(err, cartResult){
+					if(!err){
+						console.log("######### COUNT ", cartResult.length);
+						if(cartResult.length > 0){
+							//There are items which should be updated
+							var newQuantity = cartResult[0].quantity+body.qty;
+							var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+							Cart.updateAll(
+								{cityid: body.cityid, userid: body.userid},
+								{quantity: newQuantity, totalprice: (cityResult[0].tour_price*newQuantity),
+									updatedate: dateNow},
+								function(err, updateInfo){
+									console.log("#### UPDATE RESULT ", updateInfo);
+									Cart.find({
+										where: {cityid: body.cityid, userid: body.userid},
+										fields: {createdate:false, updatedate: false}
+									},
+									function(err, cartUpdateResult){
+										if(!err){
+											cb(null, cartUpdateResult);
+										}else{
+											var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+									  		error.status = 500;
+									  		cb(error, null);
+										}
+									});
+							});
+						}else{
+							//Add new items
+							console.log("##### ADDING NEW ITEM");
+							var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+							Cart.create(
+								{cityid: body.cityid, userid: body.userid, thumburl: cityResult[0].thumburl, 
+									unitprice: cityResult[0].tour_price, quantity: body.qty, 
+									totalprice: (cityResult[0].tour_price*body.qty), createdate: dateNow,
+									updatedate: dateNow},
+								function(err, createResult){
 									if(!err){
-										cb(null, result);
+										//return a total number of items for this user
+										Cart.count({
+											userid:body.userid},
+											function(err, count){
+												if(!err){
+													cb(null, count);
+												}else{
+													var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+											  		error.status = 500;
+											  		cb(error, null);
+												}
+											});
 									}else{
 										var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
 								  		error.status = 500;
 								  		cb(error, null);
 									}
 								});
-							});
+						}
+					}else{
+						var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+				  		error.status = 500;
+				  		cb(error, null);
+					}
+				});
 			}else{
 				var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
 		  		error.status = 500;
 		  		cb(error, null);
 			}
 		});
-
-		
-
-		// Cart.find({
-  //   		where: {cityid: body.cityid, userid: body.userid},     		
-  //   	},
-		// function(err, result){
-		// 	console.log("##### RESULTS: ",result);
-		// 	if(!err){
-		// 		if(result.length > 0){
-		// 			if(qty === 0){
-		// 				//delete existing item
-		// 			}else{
-		// 				//Update stuff
-		// 				Cart.updateAll({cityid: body.cityid, userid: body.userid},
-		// 					{quantity: qty, totalprice: result[0].unitprice*qty},
-		// 					function(err, info){
-		// 						console.log("#### UPDATE RESULT ", info);
-		// 					});
-		// 			}
-		// 		}else{
-		// 			// create a new
-		// 		}
-		// 		cb(null, result);
-		// 	}else{
-		// 		var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-		//   		error.status = 500;
-		//   		cb(error, null);
-		// 	}
-		// });
 	};
 
 	Cart.remoteMethod(
@@ -88,7 +117,7 @@ module.exports = function(Cart) {
 		      	}
 		    },
 	    	returns: {
-				arg: 'item',
+				arg: 'items',
 				description: 'Returns an HTTP 200, and the items in cart for this user, if everything goes well',
 				type: 'any'
 	    	}
@@ -109,8 +138,10 @@ module.exports = function(Cart) {
 			function(err, result){
 				if(!err){
 					unitprice = result[0].tour_price;
+					var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 					Cart.updateAll({cityid: body.cityid, userid: body.userid},
-						{quantity: body.qty, totalprice: result[0].tour_price*body.qty},
+						{quantity: body.qty, totalprice: result[0].tour_price*body.qty,
+							updatedate: dateNow},
 						function(err, info){
 							console.log("#### UPDATE RESULT ", info);
 							Cart.find({
@@ -134,7 +165,7 @@ module.exports = function(Cart) {
 				}
 			});
 		}else{
-			//quantity delete the item
+			//quantity 0, delete the item
 			Cart.destroyAll({
 				where: {cityid: body.cityid, userid: body.userid}},
 				function(err, result){
@@ -196,7 +227,7 @@ module.exports = function(Cart) {
 
 // ---------------- Show all cart items ----------
 
-	Cart.getCart = function(userid, cb){
+Cart.getCart = function(userid, cb){
 
 	if(userid === undefined){
 		var error = new Error("No id was supplied. You must supply a user id");
@@ -217,28 +248,7 @@ module.exports = function(Cart) {
 			}
 		});
 	}
-			
-			// var City = app.models.City;
-			// City.find({
-			// 	where: {id: body.cityid}, 
-			// 	fields: {id:true, thumburl: true, tour_price: true}
-			// },
-			// function(err, result){
-			// 	if(!err){
-			// 		unitprice = result[0].tour_price;
-			// 		Cart.updateAll({cityid: body.cityid, userid: body.userid},
-			// 			{quantity: body.qty, totalprice: result[0].tour_price*body.qty},
-			// 			function(err, info){
-			// 				console.log("#### UPDATE RESULT ", info);
-							
-			// 			});
-			// 	}else{
-			// 		var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-			//   		error.status = 500;
-			//   		cb(error, null);
-			// 	}
-			// });
-	};
+};
 
 
 	Cart.remoteMethod(
