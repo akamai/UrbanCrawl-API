@@ -14,7 +14,7 @@
     ]
   },
   "User": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": true,
     "options": {
       "remoting": {
@@ -25,26 +25,26 @@
     }
   },
   "AccessToken": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": false
   },
   "ACL": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": false
   },
   "RoleMapping": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": false,
     "options": {
       "strictObjectIDCoercion": true
     }
   },
   "Role": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": false
   },
   "city": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": true,
     "options": {
       "remoting": {
@@ -58,7 +58,7 @@
     }
   },
   "place": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": true,
     "options": {
       "remoting": {
@@ -71,7 +71,7 @@
     }
   },
   "media": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": true,
     "options": {
       "remoting": {
@@ -84,7 +84,7 @@
     }
   },
   "cart": {
-    "dataSource": "db_name",
+    "dataSource": "db",
     "public": true,
     "options": {
       "remoting": {

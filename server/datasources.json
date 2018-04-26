@@ -1,12 +1,6 @@
 {
-  "db_name": {
-    "host": "example_host",
-    "port": 0,
-    "url": "",
-    "database": "database_name",
-    "password": "password",
-    "name": "db_name",
-    "user": "username",
-    "connector": "mysql"
+  "db": {
+    "connector": "mysql",
+    "url": "${CLEARDB_DATABASE_URL}"
   }
 }
