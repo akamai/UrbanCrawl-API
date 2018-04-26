@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018. Akamai Technologies, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 'use strict';
 
 module.exports = function(City) {
@@ -7,7 +23,7 @@ disableRemoteMethod gives a deprecation warning as of now, but it's
 suggested alternative, disableRemoteMethodByName doesn't seem to work.
 So sticking with disableRemoteMethod as of now
 **/
-  
+
 City.disableRemoteMethod('__count__places', false );
 City.disableRemoteMethod('__create__places', false );
 City.disableRemoteMethod('__delete__places', false );
@@ -23,7 +39,7 @@ City.getAllCities = function(cb) {
 	City.find({fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true} },
 		function(err, result){
 			if(!err){
-				cb(null, result);	
+				cb(null, result);
 			}else{
 				var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
 		  		error.status = 500;
@@ -60,8 +76,8 @@ City.getCityDetails = function(idToFind, cb) {
   	}else{
 
     	City.find({
-    		where: {id: idToFind}, 
-    		fields: {createdate: false, lastupdated: false}, 
+    		where: {id: idToFind},
+    		fields: {createdate: false, lastupdated: false},
     		include: {relation: 'places', scope: {fields: ["id", "name", "heroimage", "herovideo", "description", "numimages", "timings"]}}
     	}, function(err, result){
 
@@ -89,8 +105,8 @@ City.getCityDetails = function(idToFind, cb) {
         verb: 'get'
       },
       accepts: {
-      	arg: 'id', 
-      	type: 'number', 
+      	arg: 'id',
+      	type: 'number',
       	http: {
       		source: 'query'
       	}
@@ -117,7 +133,7 @@ City.search = function(keyword, cb) {
   	}else{
 
     	City.find({
-    		where: {name: {like: "%"+keyword+"%"}}, 
+    		where: {name: {like: "%"+keyword+"%"}},
     		fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true}
     	},
     	function(err, result){
@@ -146,8 +162,8 @@ City.search = function(keyword, cb) {
         verb: 'get'
       },
       accepts: {
-      	arg: 'q', 
-      	type: 'string', 
+      	arg: 'q',
+      	type: 'string',
       	http: {
       		source: 'query'
       	}

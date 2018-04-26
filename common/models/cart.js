@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018. Akamai Technologies, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // 'use strict';
 
 var app = require('../../server/server');
@@ -10,11 +26,11 @@ module.exports = function(Cart) {
 
 	Cart.addToCart = function(body, cb){
 		console.log("##### cityId: "+body.cityid+", userID: "+body.userid+", Qty: "+body.qty);
-		if(body === undefined || 
-			body.cityid === undefined || 
+		if(body === undefined ||
+			body.cityid === undefined ||
 			body.userid === undefined ||
 			body.qty === undefined){
-			
+
 			var error = new Error("Supplied parameters are insufficient.");
 	  		error.status = 400;
 	  		cb(error, null);
@@ -23,7 +39,7 @@ module.exports = function(Cart) {
 		var City = app.models.City;
 
 		City.find({
-			where: {id: body.cityid}, 
+			where: {id: body.cityid},
 			fields: {id:true, thumburl: true, tour_price: true}
 		},
 		function(err, cityResult){
@@ -64,8 +80,8 @@ module.exports = function(Cart) {
 							console.log("##### ADDING NEW ITEM");
 							var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 							Cart.create(
-								{cityid: body.cityid, userid: body.userid, thumburl: cityResult[0].thumburl, 
-									unitprice: cityResult[0].tour_price, quantity: body.qty, 
+								{cityid: body.cityid, userid: body.userid, thumburl: cityResult[0].thumburl,
+									unitprice: cityResult[0].tour_price, quantity: body.qty,
 									totalprice: (cityResult[0].tour_price*body.qty), createdate: dateNow,
 									updatedate: dateNow},
 								function(err, createResult){
@@ -110,8 +126,8 @@ module.exports = function(Cart) {
 		        status: 200
 	    	},
 	    	accepts: {
-		      	arg: 'items', 
-		      	type: 'any', 
+		      	arg: 'items',
+		      	type: 'any',
 		      	http: {
 		      		source: 'body'
 		      	}
@@ -128,11 +144,11 @@ module.exports = function(Cart) {
 //------------- UPDATE THE CART ----------------
 
 	Cart.updateCart = function(body, cb){
-		
+
 		var City = app.models.City;
 		if(body.qty > 0){
 			City.find({
-				where: {id: body.cityid}, 
+				where: {id: body.cityid},
 				fields: {id:true, thumburl: true, tour_price: true}
 			},
 			function(err, result){
@@ -208,8 +224,8 @@ module.exports = function(Cart) {
 		        status: 200
 	    	},
 	    	accepts: {
-		      	arg: 'items', 
-		      	type: 'any', 
+		      	arg: 'items',
+		      	type: 'any',
 		      	http: {
 		      		source: 'body'
 		      	}
@@ -258,8 +274,8 @@ Cart.getCart = function(userid, cb){
 		      	verb: 'get'
 	    	},
 	    	accepts: {
-		      	arg: 'userid', 
-		      	type: 'number', 
+		      	arg: 'userid',
+		      	type: 'number',
 		      	http: {
 		      		source: 'query'
 		      	}

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018. Akamai Technologies, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 'use strict';
 
 module.exports = function(Media) {
@@ -12,7 +28,7 @@ Media.getAllMediaByPlaceId = function(idToFind, mediaType, cb) {
     }else{
     	var whereCondition;
     	if(mediaType === undefined){
-    		whereCondition = {placeid: idToFind};	
+    		whereCondition = {placeid: idToFind};
     	}else{
     		whereCondition = {placeid: idToFind, type: mediaType};
     	}
@@ -45,7 +61,7 @@ Media.getAllMediaByPlaceId = function(idToFind, mediaType, cb) {
       },
       accepts: [
 	      {
-	        arg: 'placeid', 
+	        arg: 'placeid',
 	        type: 'number',
 	        description: 'The placeid with which you want to search',
 	        http: {
@@ -53,8 +69,8 @@ Media.getAllMediaByPlaceId = function(idToFind, mediaType, cb) {
 	        }
 	      },
 	      {
-	    	arg: 'type', 
-	    	type: 'string', 
+	    	arg: 'type',
+	    	type: 'string',
 	    	description: 'you can provide \'image\', \'video\' to get images or videos respectively. Leave this empty to get videos and images both',
 	    	http: {
 	      		source: 'query'
@@ -79,7 +95,7 @@ Media.getAllMediaByPlaceId = function(idToFind, mediaType, cb) {
     }else{
     	var whereCondition;
     	if(mediaType === undefined){
-    		whereCondition = {cityid: idToFind};	
+    		whereCondition = {cityid: idToFind};
     	}else{
     		whereCondition = {cityid: idToFind, type: mediaType};
     	}
@@ -112,16 +128,16 @@ Media.getAllMediaByPlaceId = function(idToFind, mediaType, cb) {
       },
       accepts: [
 	      {
-	    	arg: 'cityid', 
-	    	type: 'number', 
+	    	arg: 'cityid',
+	    	type: 'number',
 	    	description: 'The cityid with which you want to search',
 	    	http: {
 	      		source: 'query'
 	    	}
 	      },
 	      {
-	    	arg: 'type', 
-	    	type: 'string', 
+	    	arg: 'type',
+	    	type: 'string',
 	    	description: 'you can provide \'image\', \'video\' to get images or videos respectively. Leave this empty to get videos and images both',
 	    	http: {
 	      		source: 'query'
