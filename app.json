@@ -1,0 +1,24 @@
+{
+  "name": "UrbanCrawl API",
+  "description": "UrbanCrawl API (Demo API for Akamai Developer)",
+  "website": "https://developer.akamai.com/",
+  "success_url": "/explorer",
+  "addons": ["cleardb:ignite"],
+  "env": {
+    "NODE_ENV": {
+      "description": "Set the NODE_ENV to 'demo' to automatically seed the DB on deploy",
+      "value": "production"
+    },
+    "JWT_USER_PASSWORD": {
+      "description": "Psuedo password used within the app",
+      "generator": "secret"
+    },
+    "SECRET_KEY": {
+      "description": "Secret Key used to generate RSA keypair",
+      "generator": "secret"
+    }
+  },
+  "scripts": {
+    "postdeploy": "node deploy/provision.js"
+  }
+}
