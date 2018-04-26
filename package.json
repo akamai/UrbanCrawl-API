@@ -1,6 +1,10 @@
 {
-  "name": "terraplanet",
-  "version": "1.0.0",
+  "name": "@akamai/urbancrawl-api",
+  "description": "UrbanCrawl API (Demo API for Akamai Developer)",
+  "version": "0.1.0",
+  "homepage": "https://developer.akamai.com",
+  "bugs": "https://github.com/akamai/urbancrawl-api/issues",
+  "license": "Apache-2.0",
   "main": "server/server.js",
   "engines": {
     "node": ">=4"
@@ -30,9 +34,7 @@
     "nsp": "^2.1.0"
   },
   "repository": {
-    "type": "",
-    "url": ""
-  },
-  "license": "UNLICENSED",
-  "description": "terraplanet"
+    "type": "git",
+    "url": "https://github.com/akamai/urbancrawl-api.git"
+  }
 }
