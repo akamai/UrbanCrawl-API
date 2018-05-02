@@ -98,7 +98,7 @@
     }
   },
   "order": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": true,
     "options": {
       "remoting": {
