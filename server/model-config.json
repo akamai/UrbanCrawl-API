@@ -14,7 +14,7 @@
     ]
   },
   "User": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": true,
     "options": {
       "remoting": {
@@ -25,26 +25,26 @@
     }
   },
   "AccessToken": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": false
   },
   "ACL": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": false
   },
   "RoleMapping": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": false,
     "options": {
       "strictObjectIDCoercion": true
     }
   },
   "Role": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": false
   },
   "city": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": true,
     "options": {
       "remoting": {
@@ -58,7 +58,7 @@
     }
   },
   "place": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": true,
     "options": {
       "remoting": {
@@ -71,7 +71,7 @@
     }
   },
   "media": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": true,
     "options": {
       "remoting": {
@@ -84,7 +84,7 @@
     }
   },
   "cart": {
-    "dataSource": "terraplanet-db-heroku",
+    "dataSource": "db_name",
     "public": true,
     "options": {
       "remoting": {
@@ -93,6 +93,19 @@
           "addToCart": true,
           "updateCart": true,
           "getCart": true
+        }
+      }
+    }
+  },
+  "order": {
+    "dataSource": "terraplanet-db-heroku",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "checkout": true,
+          "getOrders": true
         }
       }
     }

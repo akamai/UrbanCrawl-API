@@ -7,7 +7,7 @@ Urban Crawl's apps' source code is available here:
 - iOS : [https://github.com/akamai/UrbanCrawl-iOS](https://github.com/akamai/UrbanCrawl-iOS)
 - Android : [https://github.com/akamai/UrbanCrawl-Android](https://github.com/akamai/UrbanCrawl-iOS)
 
-The API exists here : [http://terraplanet.herokuapp.com/explorer/](http://terraplanet.herokuapp.com/explorer/)
+
 
 ### How to get started ###
 
@@ -20,7 +20,7 @@ If you're basing this off of your own Loopback instance, look into following fol
 - SQLDump - for a dump of the live database
 
 ### Deployment ###
-- `https://git.heroku.com/terraplanet.git` - The URL to push and deploy on heroku. You need adequate permissions before you can deploy. Talk to the author listed below.
+- [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ### Who to contact ###
 Contact any of the following:
