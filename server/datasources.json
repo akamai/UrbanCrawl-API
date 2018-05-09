@@ -1,12 +1,12 @@
 {
   "db_name": {
-    "host": "example_host",
+    "host": "eu-cdbr-west-01.cleardb.com",
     "port": 0,
     "url": "",
-    "database": "database_name",
-    "password": "password",
-    "name": "db_name",
-    "user": "username",
+    "database": "heroku_91fb6acbc112b2f",
+    "password": "059379ae",
+    "name": "terraplanet-db-heroku",
+    "user": "b9bcf8f8fd1b1b",
     "connector": "mysql"
   }
 }
