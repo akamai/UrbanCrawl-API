@@ -1,5 +1,5 @@
 module.exports = {
-  db: {
+  db_name: {
     connector: 'mysql',
     hostname: process.env.CLEARDB_DATABASE_URL,
     port: process.env.CLEARDB_PORT,
