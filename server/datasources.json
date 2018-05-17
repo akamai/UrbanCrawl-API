@@ -1,6 +1,7 @@
 {
   "db_name": {
-    "connector": "mysql",
-    "url": "${CLEARDB_DATABASE_URL}"
+    "url": "${CLEARDB_DATABASE_URL}",
+    "name": "db_name",
+    "connector": "mysql"
   }
 }

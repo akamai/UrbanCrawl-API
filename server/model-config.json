@@ -109,5 +109,30 @@
         }
       }
     }
+  },
+  "jwt_model": {
+    "dataSource": "db_name",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "printkeys": true
+        }
+      }
+    }
+  },
+  "customer": {
+    "dataSource": "db_name",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false,
+          "register": true,
+          "login": true
+        }
+      }
+    }
   }
 }
