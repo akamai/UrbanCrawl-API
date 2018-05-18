@@ -21,48 +21,66 @@ module.exports = function(Customer) {
 		var bcrypt = require('bcrypt');
 		var moment = require("moment");
 		var jwt = require('jsonwebtoken');
-		var keypair = require('keypair');
+		// var keypair = require('keypair');
 
 		const saltRounds = 10;
 
-		Customer.count({email: body.email},function(err, count){
+		//trying to find existing keys to use
+		var app = require('../../server/server');
+		var Keypairs = app.models.keypairs;
+
+		Keypairs.find(function(err, keys){
 			if(!err){
-				if(count == 0){
-
-					var plainPassword = body.password;
-
-					bcrypt.hash(plainPassword, saltRounds, function(err, hash){
-						if(!err){
-							const uuidv1 = require('uuid/v1');
-							
-							var userId = uuidv1();
-							var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-							Customer.create(
-								{userid: userId, email: body.email, password: hash, full_name: body.name, createdate: dateNow},
-								function(err, createResult){
-									if(!err){
-										//create jwt token
-										var pair = keypair();
-										var cert = pair.private;
-										jwt.sign({ userid: userId }, cert, { algorithm: 'RS256' }, function(err, token) {
-										  cb(null, {status: "ok", token: token});
-										});
-									}else{
-										cb(err, null);
-									}
-							});
-						}else{
-							cb(err, null);
-						}
-					});
-				}else{
-					cb(null, {status: "error", message: "Email already exists"});
-				}
-				return;
+				registerWithKey(keys);
 			}else{
-				cb(err, null);
+				var error = new Error("Couldn't register. Reason : unavailable encryption resources. Please contact us");
+				error.status = 500;
+				cb(error, null);
+				return;
 			}
 		});
+
+
+		var registerWithKey = function(pair){
+				Customer.count({email: body.email},function(err, count){
+				if(!err){
+					if(count == 0){
+
+						var plainPassword = body.password;
+
+						bcrypt.hash(plainPassword, saltRounds, function(err, hash){
+							if(!err){
+								const uuidv1 = require('uuid/v1');
+								
+								var userId = uuidv1();
+								var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+								Customer.create(
+									{userid: userId, email: body.email, password: hash, full_name: body.name, createdate: dateNow},
+									function(err, createResult){
+										if(!err){
+											//create jwt token
+											// var pair = keypair();
+											var cert = pair[0].private_key;
+											jwt.sign({ userid: userId }, cert, { algorithm: 'RS256' }, function(err, token) {
+											  cb(null, {status: "ok", token: token});
+											});
+										}else{
+											cb(err, null);
+										}
+								});
+							}else{
+								cb(err, null);
+							}
+						});
+					}else{
+						cb(null, {status: "error", message: "Email already exists"});
+					}
+					return;
+				}else{
+					cb(err, null);
+				}
+			});
+		}
 	}
 
 	Customer.login = function(body, cb){
@@ -70,14 +88,28 @@ module.exports = function(Customer) {
 		if(body === undefined || 
 			body.email === undefined ||
 			body.password === undefined){
-				var env = process.env.NODE_ENV;
-				console.log("### env", env);
-				var error = new Error("Insufficient parameters supplied. env: "+env);
+				var error = new Error("Insufficient parameters supplied.");
 				error.status = 400;
 				cb(error, null);
 				return;
 		}
 
+		//trying to find existing keys to use
+		var app = require('../../server/server');
+		var Keypairs = app.models.keypairs;
+
+		Keypairs.find(function(err, keys){
+			if(!err){
+				loginWithKey(keys);
+			}else{
+				var error = new Error("Couldn't login. Reason : unavailable encryption resources. Please contact us");
+				error.status = 500;
+				cb(error, null);
+				return;
+			}
+		});
+
+		var loginWithKey = function(pair){
 		Customer.find({where: {email: body.email}},
 			function(err, findResults){
 				if(!err){
@@ -91,8 +123,8 @@ module.exports = function(Customer) {
 							        var jwt = require('jsonwebtoken');
 									var keypair = require('keypair');
 									
-									var pair = keypair();
-									var cert = pair.private;
+									// var pair = keypair();
+									var cert = pair[0].private_key;
 									jwt.sign({ userid: findResults[0].userid }, cert, { algorithm: 'RS256' }, function(err, token) {
 									  cb(null, {status: "ok", token: token});
 									});
@@ -111,7 +143,7 @@ module.exports = function(Customer) {
 					cb(err, null);
 				}
 			});
-		
+		}
 	}
 
 	Customer.remoteMethod(

@@ -8,7 +8,6 @@ module.exports = function(app, cb) {
    * http://docs.strongloop.com/display/public/LB/Working+with+LoopBack+objects
    * for more info.
    */
-	console.log("$$$ From keygenerator boot script");
 
 	var env = process.env.NODE_ENV;
 
@@ -24,20 +23,33 @@ module.exports = function(app, cb) {
     if(!err){
       if(count == 0){
         saveKeys(pair);
+      }else{
+        deleteAndSaveNewKeys(pair);
+        
       }
     }else{
-      console.log("$$$ err", err);
+      console.log("BOOTSCRIPT: count err", err);
     }
   });
 
+  var deleteAndSaveNewKeys = function(pair){
+    Keypairs.destroyAll(function(err, info){
+      if(!err){
+        console.log("BOOTSCRIPT: destroy old keys result", info);
+        saveKeys(pair);
+      }else{
+
+      }
+    });
+  }
 
   var saveKeys = function(pair){
     Keypairs.create({private_key: pair.private, public_key: pair.public},
           function(err, createResults){
             if(!err){
-              console.log("$$$ keys created and saved", pair);
+              console.log("BOOTSCRIPT: keys created and saved");
             }else{
-              console.log("$$$ keys couldn't be saved", pair);
+              console.log("BOOTSCRIPT: keys couldn't be saved");
             }
           });
   };
