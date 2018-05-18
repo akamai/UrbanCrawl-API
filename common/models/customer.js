@@ -13,7 +13,7 @@ module.exports = function(Customer) {
 			body.password === undefined ||
 			body.name === undefined){
 				var error = new Error("Insufficient parameters supplied");
-				error.status = 500;
+				error.status = 400;
 				cb(error, null);
 				return;
 		}
@@ -71,7 +71,7 @@ module.exports = function(Customer) {
 			body.email === undefined ||
 			body.password === undefined){
 				var error = new Error("Insufficient parameters supplied");
-				error.status = 500;
+				error.status = 400;
 				cb(error, null);
 				return;
 		}
