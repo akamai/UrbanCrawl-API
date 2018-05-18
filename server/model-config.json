@@ -15,7 +15,7 @@
   },
   "User": {
     "dataSource": "db_name",
-    "public": true,
+    "public": false,
     "options": {
       "remoting": {
         "sharedMethods": {
@@ -106,18 +106,6 @@
           "*": false,
           "checkout": true,
           "getOrders": true
-        }
-      }
-    }
-  },
-  "jwt_model": {
-    "dataSource": "db_name",
-    "public": true,
-    "options": {
-      "remoting": {
-        "sharedMethods": {
-          "*": false,
-          "printkeys": true
         }
       }
     }
