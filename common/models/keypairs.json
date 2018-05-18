@@ -1,0 +1,22 @@
+{
+  "name": "keypairs",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "public_key": {
+      "type": "string",
+      "required": true
+    },
+    "private_key": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
