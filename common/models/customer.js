@@ -70,7 +70,9 @@ module.exports = function(Customer) {
 		if(body === undefined || 
 			body.email === undefined ||
 			body.password === undefined){
-				var error = new Error("Insufficient parameters supplied");
+				var env = process.env.NODE_ENV;
+				console.log("### env", env);
+				var error = new Error("Insufficient parameters supplied. env: "+env);
 				error.status = 400;
 				cb(error, null);
 				return;

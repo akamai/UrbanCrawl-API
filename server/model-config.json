@@ -122,5 +122,9 @@
         }
       }
     }
+  },
+  "keypairs": {
+    "dataSource": "db_name",
+    "public": false
   }
 }
