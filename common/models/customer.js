@@ -2,7 +2,21 @@
 
 module.exports = function(Customer) {
 
+// {"email":"foo@bar.com",
+// "password" : "foobar",
+// "name" : "John Doe"}
+
 	Customer.register = function(body, cb){
+
+		if(body === undefined || 
+			body.email === undefined ||
+			body.password === undefined ||
+			body.name === undefined){
+				var error = new Error("Insufficient parameters supplied");
+				error.status = 500;
+				cb(error, null);
+				return;
+		}
 
 		var bcrypt = require('bcrypt');
 		var moment = require("moment");
