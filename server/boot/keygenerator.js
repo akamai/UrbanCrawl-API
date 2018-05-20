@@ -11,13 +11,12 @@ module.exports = function(app, cb) {
 
 	var env = process.env.NODE_ENV;
 
-	console.log("$$$ Environment: ",env);
+	console.log("BOOTSCRIPT: Environment: ",env);
 
   var Keypairs = app.models.keypairs;
 
   var keypair = require('keypair');
   var pair = keypair();
-  var cert = pair.private;
 
   Keypairs.count({}, function(err, count){
     if(!err){

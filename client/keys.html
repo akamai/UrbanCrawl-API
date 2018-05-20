@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Urban Crawl | Get Public Keys</title>
+	</head>
+
+	<body>
+		<br/><br/>
+		<div id="content"></div>
+		<br/><br/>
+		<button onclick=resetKeys()>Reset Keys</button>
+		<div id="warning">(Resetting keys will break the systems that rely on older keys)</div>
+	</body>
+
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+		<script type="text/javascript">
+			
+			var API_BASE = "http://localhost:3000/api";
+
+			var getKeys = function(){
+				makeAPICallAndFillWithResponse(API_BASE+"/keypairs/getPublicKey/");
+			}
+
+			var resetKeys = function(){
+				makeAPICallAndFillWithResponse(API_BASE+"/keypairs/regenerateKeys/");
+			}
+
+			var makeAPICallAndFillWithResponse = function(url){
+				var resultElement = document.getElementById("content");
+
+				resultElement.innerHTML = "Requesting Keys..";
+				
+				axios.get(url)
+					.then(function(response){
+						var result = response.data.result;
+						console.log("KeysAPIError: ",result);
+						if(result.status === "ok"){
+							resultElement.innerHTML = result.public_key;
+						}else{
+							resultElement.innerHTML = result.message;
+						}
+					})
+					.catch(function(err){
+						console.log("KeysAPIError: ",err);
+					});
+			}
+
+			getKeys();
+
+		</script>
+
+</html> 
