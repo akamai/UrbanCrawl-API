@@ -195,7 +195,7 @@ module.exports = function(Customer) {
 			    	console.log("sendTokenToGateway: Collection present, going to send token: ",data);
 			    	sendToken(data[0].id, sha256Token);
 			    }else{
-			    	console.log("sendTokenToGateway: Collection not present, going to create collection: ",data);
+			    	console.log("sendTokenToGateway: Collection not present, going to create: ",data);
 			    	createNewCollectionAndSendToken(sha256Token);
 			    }
 			}
@@ -227,7 +227,7 @@ module.exports = function(Customer) {
 		    console.log("createNewCollectionAndSendToken: Listing all collections...");
 		    data = JSON.parse(response.body);
 		    console.log("createNewCollectionAndSendToken: Data ",data);
-		    console.log("createNewCollectionAndSendToken: Status: ",response.statusCode);
+		    console.log("createNewCollectionAndSendToken: Response status: ",response.statusCode);
 		    if(response.statusCode == 200 || response.statusMessage == "ok"){
 		    	sendToken(data[0].id, sha256Token);
 			}
