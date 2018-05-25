@@ -185,14 +185,17 @@ module.exports = function(Customer) {
 		});
 
 		eg.send(function(data, response) {
-		    console.log("Listing all collections...");
+		    console.log("sendTokenToGateway: Listing all collections...");
 
 		    data = JSON.parse(response.body);
 		    console.log("sendTokenToGateway: Status: ",response.statusCode);
+		    console.log("sendTokenToGateway: Data: ",data);
 		    if(response.statusCode == 200 || response.statusMessage == "ok"){
 			    if(data.length > 0){
+			    	console.log("sendTokenToGateway: Collection present, going to send token: ",data);
 			    	sendToken(data[0].id, sha256Token);
 			    }else{
+			    	console.log("sendTokenToGateway: Collection not present, going to create collection: ",data);
 			    	createNewCollectionAndSendToken(sha256Token);
 			    }
 			}
