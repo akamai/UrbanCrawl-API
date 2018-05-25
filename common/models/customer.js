@@ -136,32 +136,6 @@ module.exports = function(Customer) {
 									//   cb(null, {status: "ok", token: token});
 									// });
 
-								  //     	var EdgeGrid = require('edgegrid');
-								  //     	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
-								  //     		process.env.AKAMAI_CLIENT_SECRET, 
-								  //     		process.env.AKAMAI_ACCESS_TOKEN, 
-								  //     		process.env.AKAMAI_HOST);
-
-								  //     	eg.auth({
-										//     path: '/apikey-manager-api/v1/keys',
-										//     method: 'POST',
-										//     headers: {
-										//     	"Content-Type": "application/json"
-										//     },
-										//     body: {
-										//     	"collectionId": 21325,
-										// 	    "mode": "CREATE_ONE",
-										// 	    "value": "irZB0wZ43y7ozTJCrhhgGCJJ2DUpFpDNYWWziHkxtwTAlSdzDBouGbzXVxFHL3pK",
-										// 	    "label": "Access Token",
-										// 	    "description": "Access Token for Urban Crawl Customer"
-										//     }
-										// });
-
-										// eg.send(function(data, response) {
-										//     data = JSON.parse(response.body);
-										//     console.log("TEST: Data ",data);
-										// });
-
 										var crypto = require("crypto");
 										var sha256 = crypto.createHash("sha256");
 										sha256.update(findResults[0].userid);
@@ -215,12 +189,44 @@ module.exports = function(Customer) {
 
 		    data = JSON.parse(response.body);
 		    console.log("sendTokenToGateway: Status: ",response.statusCode);
-		    if(response.statusCode == 200 || response.statusMessage = "ok"){
+		    if(response.statusCode == 200 || response.statusMessage == "ok"){
 			    if(data.length > 0){
 			    	sendToken(data[0].id, sha256Token);
 			    }else{
 			    	createNewCollectionAndSendToken(sha256Token);
 			    }
+			}
+		});
+	}
+
+	var createNewCollectionAndSendToken = function(sha256Token){
+		var EdgeGrid = require('edgegrid');
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
+      		process.env.AKAMAI_CLIENT_SECRET, 
+      		process.env.AKAMAI_ACCESS_TOKEN, 
+      		process.env.AKAMAI_HOST);
+
+      	eg.auth({
+		    path: '/apikey-manager-api/v1/collections',
+		    method: 'POST',
+		    headers: {
+		    	"Content-Type": "application/json"
+		    },
+		    body: {
+		    	"name": "UrbanCrawlCustomersCollection",
+			    "contractId": "C-1FRYVV3",
+			    "groupId": 68817,
+			    "description": "Collection for Urban Crawl Customers"
+		    }
+		});
+
+		eg.send(function(data, response) {
+		    console.log("createNewCollectionAndSendToken: Listing all collections...");
+		    data = JSON.parse(response.body);
+		    console.log("createNewCollectionAndSendToken: Data ",data);
+		    console.log("createNewCollectionAndSendToken: Status: ",response.statusCode);
+		    if(response.statusCode == 200 || response.statusMessage == "ok"){
+		    	sendToken(data[0].id, sha256Token);
 			}
 		});
 	}
@@ -255,38 +261,6 @@ module.exports = function(Customer) {
 		    data = JSON.parse(response.body);
 		    console.log("sendToken: Data ",data);
 		    console.log("sendToken Status: ",response.statusCode);
-		});
-	}
-
-	var createNewCollectionAndSendToken = function(sha256Token){
-		var EdgeGrid = require('edgegrid');
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
-      		process.env.AKAMAI_CLIENT_SECRET, 
-      		process.env.AKAMAI_ACCESS_TOKEN, 
-      		process.env.AKAMAI_HOST);
-
-      	eg.auth({
-		    path: '/apikey-manager-api/v1/collections',
-		    method: 'POST',
-		    headers: {
-		    	"Content-Type": "application/json"
-		    },
-		    body: {
-		    	"name": "UrbanCrawlCustomersCollection",
-			    "contractId": "C-1FRYVV3",
-			    "groupId": 68817,
-			    "description": "Collection for Urban Crawl Customers"
-		    }
-		});
-
-		eg.send(function(data, response) {
-		    console.log("createNewCollectionAndSendToken: Listing all collections...");
-		    data = JSON.parse(response.body);
-		    console.log("createNewCollectionAndSendToken: Data ",data);
-		    console.log("createNewCollectionAndSendToken: Status: ",response.statusCode);
-		    if(response.statusCode == 200 || response.statusMessage = "ok"){
-		    	sendToken(data[0].id, sha256Token);
-			}
 		});
 	}
 
