@@ -214,11 +214,14 @@ module.exports = function(Customer) {
 		    console.log("Listing all collections...");
 
 		    data = JSON.parse(response.body);
-		    if(data.length > 0){
-		    	sendToken(data[0].id, sha256Token);
-		    }else{
-		    	createNewCollectionAndSendToken(sha256Token);
-		    }
+		    console.log("sendTokenToGateway: Status: ",response.statusCode);
+		    if(response.statusCode == 200 || response.statusMessage = "ok"){
+			    if(data.length > 0){
+			    	sendToken(data[0].id, sha256Token);
+			    }else{
+			    	createNewCollectionAndSendToken(sha256Token);
+			    }
+			}
 		});
 	}
 
@@ -251,6 +254,7 @@ module.exports = function(Customer) {
 		eg.send(function(data, response) {
 		    data = JSON.parse(response.body);
 		    console.log("sendToken: Data ",data);
+		    console.log("sendToken Status: ",response.statusCode);
 		});
 	}
 
@@ -279,7 +283,10 @@ module.exports = function(Customer) {
 		    console.log("createNewCollectionAndSendToken: Listing all collections...");
 		    data = JSON.parse(response.body);
 		    console.log("createNewCollectionAndSendToken: Data ",data);
-		    sendToken(data[0].id, sha256Token);
+		    console.log("createNewCollectionAndSendToken: Status: ",response.statusCode);
+		    if(response.statusCode == 200 || response.statusMessage = "ok"){
+		    	sendToken(data[0].id, sha256Token);
+			}
 		});
 	}
 
