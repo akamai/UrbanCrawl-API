@@ -1,6 +1,6 @@
 'use strict';
 
-// var app = require('../../node_modules/loopback/common/models/accesstoken');
+var app = require('../../server/server');
 var EdgeGrid = require('edgegrid');
 
 module.exports = function(Customer) {
@@ -66,9 +66,21 @@ module.exports = function(Customer) {
 											var sha256 = crypto.createHash("sha256");
 											sha256.update(userId);
 											var sha256Token = sha256.digest("base64");
-											cb(null, {status: "ok", token: sha256Token});
 
-											sendTokenToGateway(sha256Token);
+											var CustomerToken = app.models.Token;
+											var moment = require("moment");
+											var createdate = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+
+											CustomerToken.create({token: sha256Token, userid: userId, createdate: createdate},
+												function(err, result){
+													if(!err){
+														cb(null, {status: "ok", token: sha256Token});
+
+														sendTokenToGateway(sha256Token);
+													}else{
+														cb(err, null);
+													}
+												});
 
 										}else{
 											cb(err, null);
@@ -143,7 +155,6 @@ module.exports = function(Customer) {
 										
 										cb(null, {status: "ok", token: sha256Token});
 
-										sendTokenToGateway(sha256Token);
 										// var AcccessToken = app.models.AccessToken;
 
 										// AccessToken.find(function(err, result){
