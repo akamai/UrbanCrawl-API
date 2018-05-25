@@ -135,5 +135,9 @@
         }
       }
     }
+  },
+  "token": {
+    "dataSource": "db_name",
+    "public": false
   }
 }
