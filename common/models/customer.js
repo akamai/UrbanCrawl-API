@@ -1,5 +1,8 @@
 'use strict';
 
+// var app = require('../../node_modules/loopback/common/models/accesstoken');
+var EdgeGrid = require('edgegrid');
+
 module.exports = function(Customer) {
 
 // {"email":"foo@bar.com",
@@ -22,7 +25,6 @@ module.exports = function(Customer) {
 		var bcrypt = require('bcrypt');
 		var moment = require("moment");
 		var jwt = require('jsonwebtoken');
-		// var keypair = require('keypair');
 
 		const saltRounds = 10;
 
@@ -59,12 +61,15 @@ module.exports = function(Customer) {
 									{userid: userId, email: body.email, password: hash, full_name: body.name, createdate: dateNow},
 									function(err, createResult){
 										if(!err){
-											//create jwt token
-											// var pair = keypair();
-											var cert = pair[0].private_key;
-											jwt.sign({ userid: userId }, cert, { algorithm: 'RS256' }, function(err, token) {
-											  cb(null, {status: "ok", token: token});
-											});
+
+											var crypto = require("crypto");
+											var sha256 = crypto.createHash("sha256");
+											sha256.update(userId);
+											var sha256Token = sha256.digest("base64");
+											cb(null, {status: "ok", token: sha256Token});
+
+											sendTokenToGateway(sha256Token);
+
 										}else{
 											cb(err, null);
 										}
@@ -121,14 +126,59 @@ module.exports = function(Customer) {
 						bcrypt.compare(body.password, findResults[0].password, function(err, valid) {
 							if(!err){
 							    if (valid == true) {
-							        var jwt = require('jsonwebtoken');
-									var keypair = require('keypair');
+							  		// JWT TOKEN
+							  		// var jwt = require('jsonwebtoken');
+									// var keypair = require('keypair');
 									
 									// var pair = keypair();
-									var cert = pair[0].private_key;
-									jwt.sign({ userid: findResults[0].userid }, cert, { algorithm: 'RS256' }, function(err, token) {
-									  cb(null, {status: "ok", token: token});
-									});
+									// var cert = pair[0].private_key;
+									// jwt.sign({ userid: findResults[0].userid }, cert, { algorithm: 'RS256' }, function(err, token) {
+									//   cb(null, {status: "ok", token: token});
+									// });
+
+								  //     	var EdgeGrid = require('edgegrid');
+								  //     	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
+								  //     		process.env.AKAMAI_CLIENT_SECRET, 
+								  //     		process.env.AKAMAI_ACCESS_TOKEN, 
+								  //     		process.env.AKAMAI_HOST);
+
+								  //     	eg.auth({
+										//     path: '/apikey-manager-api/v1/keys',
+										//     method: 'POST',
+										//     headers: {
+										//     	"Content-Type": "application/json"
+										//     },
+										//     body: {
+										//     	"collectionId": 21325,
+										// 	    "mode": "CREATE_ONE",
+										// 	    "value": "irZB0wZ43y7ozTJCrhhgGCJJ2DUpFpDNYWWziHkxtwTAlSdzDBouGbzXVxFHL3pK",
+										// 	    "label": "Access Token",
+										// 	    "description": "Access Token for Urban Crawl Customer"
+										//     }
+										// });
+
+										// eg.send(function(data, response) {
+										//     data = JSON.parse(response.body);
+										//     console.log("TEST: Data ",data);
+										// });
+
+										var crypto = require("crypto");
+										var sha256 = crypto.createHash("sha256");
+										sha256.update(findResults[0].userid);
+										var sha256Token = sha256.digest("base64");
+										
+										cb(null, {status: "ok", token: sha256Token});
+
+										sendTokenToGateway(sha256Token);
+										// var AcccessToken = app.models.AccessToken;
+
+										// AccessToken.find(function(err, result){
+										// 	if(!err){
+										// 		console.log("AccessToken result ",result);
+										// 	}else{
+										// 		console.log("AccessToken err ",err);
+										// 	}
+										// });
 
 							    } else if (valid == false) {
 							        cb(null, {status: "error", message: "Incorrect Password"});
@@ -145,6 +195,92 @@ module.exports = function(Customer) {
 				}
 			});
 		}
+	}
+
+	var sendTokenToGateway = function(sha256Token){
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
+      		process.env.AKAMAI_CLIENT_SECRET, 
+      		process.env.AKAMAI_ACCESS_TOKEN, 
+      		process.env.AKAMAI_HOST);
+
+      	eg.auth({
+		    path: '/apikey-manager-api/v1/collections',
+		    method: 'GET',
+		    headers: {},
+		    body: {}
+		});
+
+		eg.send(function(data, response) {
+		    console.log("Listing all collections...");
+
+		    data = JSON.parse(response.body);
+		    if(data.length > 0){
+		    	sendToken(data[0].id, sha256Token);
+		    }else{
+		    	createNewCollectionAndSendToken(sha256Token);
+		    }
+		});
+	}
+
+	var sendToken = function(collectionId, sha256Token){
+		var EdgeGrid = require('edgegrid');
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
+      		process.env.AKAMAI_CLIENT_SECRET, 
+      		process.env.AKAMAI_ACCESS_TOKEN, 
+      		process.env.AKAMAI_HOST);
+
+      	eg.auth({
+		    path: '/apikey-manager-api/v1/keys',
+		    method: 'POST',
+		    headers: {
+		    	"Content-Type": "application/json"
+		    },
+		    body: {
+		    	"collectionId": collectionId,
+			    "mode": "CREATE_ONE",
+			    "tags": [
+			        "single",
+			        "new"
+			    ],
+			    "value": sha256Token,
+			    "label": "Access Token",
+			    "description": "Access Token for Urban Crawl Customer"
+		    }
+		});
+
+		eg.send(function(data, response) {
+		    data = JSON.parse(response.body);
+		    console.log("sendToken: Data ",data);
+		});
+	}
+
+	var createNewCollectionAndSendToken = function(sha256Token){
+		var EdgeGrid = require('edgegrid');
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
+      		process.env.AKAMAI_CLIENT_SECRET, 
+      		process.env.AKAMAI_ACCESS_TOKEN, 
+      		process.env.AKAMAI_HOST);
+
+      	eg.auth({
+		    path: '/apikey-manager-api/v1/collections',
+		    method: 'POST',
+		    headers: {
+		    	"Content-Type": "application/json"
+		    },
+		    body: {
+		    	"name": "UrbanCrawlCustomersCollection",
+			    "contractId": "C-1FRYVV3",
+			    "groupId": 68817,
+			    "description": "Collection for Urban Crawl Customers"
+		    }
+		});
+
+		eg.send(function(data, response) {
+		    console.log("createNewCollectionAndSendToken: Listing all collections...");
+		    data = JSON.parse(response.body);
+		    console.log("createNewCollectionAndSendToken: Data ",data);
+		    sendToken(data[0].id, sha256Token);
+		});
 	}
 
 	Customer.remoteMethod(

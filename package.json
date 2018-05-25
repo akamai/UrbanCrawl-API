@@ -14,6 +14,7 @@
     "bcrypt": "^2.0.1",
     "compression": "^1.0.3",
     "cors": "^2.5.2",
+    "edgegrid": "^3.0.4",
     "helmet": "^1.3.0",
     "js-object-pretty-print": "^0.3.0",
     "jsonwebtoken": "^8.2.1",
