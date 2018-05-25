@@ -192,10 +192,10 @@ module.exports = function(Customer) {
 		    console.log("sendTokenToGateway: Data: ",data);
 		    if(response.statusCode == 200 || response.statusMessage == "ok"){
 			    if(data.length > 0){
-			    	console.log("sendTokenToGateway: Collection present, going to send token: ",data);
+			    	console.log("sendTokenToGateway: Collection present, going to send token");
 			    	sendToken(data[0].id, sha256Token);
 			    }else{
-			    	console.log("sendTokenToGateway: Collection not present, going to create: ",data);
+			    	console.log("sendTokenToGateway: Collection not present, going to create a collection");
 			    	createNewCollectionAndSendToken(sha256Token);
 			    }
 			}
