@@ -34,7 +34,7 @@ City.getAllCities = function(cb) {
 	City.remoteMethod(
 	    'getAllCities', {
 	    	http: {
-		        path: '/getAllCities',
+		        path: '/',
 		        verb: 'get'
 	    	},
 	    	returns: {
@@ -83,15 +83,16 @@ City.getCityDetails = function(idToFind, cb) {
   City.remoteMethod(
     'getCityDetails', {
       http: {
-        path: '/getCityDetails',
+        path: '/:cityId',
         verb: 'get'
       },
       accepts: {
-      	arg: 'id', 
+      	arg: 'cityId', 
       	type: 'number', 
       	http: {
       		source: 'query'
-      	}
+      	},
+        required: true
       },
       returns: {
 		arg: 'cityDetails',
@@ -140,7 +141,7 @@ City.search = function(keyword, cb) {
   City.remoteMethod(
     'search', {
       http: {
-        path: '/search',
+        path: '/search/:q',
         verb: 'get'
       },
       accepts: {
@@ -148,7 +149,8 @@ City.search = function(keyword, cb) {
       	type: 'string', 
       	http: {
       		source: 'query'
-      	}
+      	},
+        required: true
       },
       returns: {
 		arg: 'cities',
