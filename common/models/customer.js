@@ -5,10 +5,6 @@ var EdgeGrid = require('edgegrid');
 
 module.exports = function(Customer) {
 
-// {"email":"foo@bar.com",
-// "password" : "foobar",
-// "name" : "John Doe"}
-
 	Customer.register = function(body, cb){
 
 		if(body === undefined || 
@@ -138,15 +134,6 @@ module.exports = function(Customer) {
 						bcrypt.compare(body.password, findResults[0].password, function(err, valid) {
 							if(!err){
 							    if (valid == true) {
-							  		// JWT TOKEN
-							  		// var jwt = require('jsonwebtoken');
-									// var keypair = require('keypair');
-									
-									// var pair = keypair();
-									// var cert = pair[0].private_key;
-									// jwt.sign({ userid: findResults[0].userid }, cert, { algorithm: 'RS256' }, function(err, token) {
-									//   cb(null, {status: "ok", token: token});
-									// });
 
 										var crypto = require("crypto");
 										var sha256 = crypto.createHash("sha256");
@@ -154,16 +141,6 @@ module.exports = function(Customer) {
 										var sha256Token = sha256.digest("base64");
 										
 										cb(null, {status: "ok", token: sha256Token});
-
-										// var AcccessToken = app.models.AccessToken;
-
-										// AccessToken.find(function(err, result){
-										// 	if(!err){
-										// 		console.log("AccessToken result ",result);
-										// 	}else{
-										// 		console.log("AccessToken err ",err);
-										// 	}
-										// });
 
 							    } else if (valid == false) {
 							        cb(null, {status: "error", message: "Incorrect Password"});
