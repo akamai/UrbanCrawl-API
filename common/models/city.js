@@ -19,7 +19,6 @@ City.disableRemoteMethod('__get__places', false );
 
 //--------- Get All Cities ------------
 City.getAllCities = function(cb) {
-
 	City.find({fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true} },
 		function(err, result){
 			if(!err){
@@ -39,13 +38,12 @@ City.getAllCities = function(cb) {
 		        verb: 'get'
 	    	},
 	    	returns: {
-				arg: 'cities',
-				description: 'Returns a JSON array of all the available cities, mainly to use in City List screen',
-				type: 'array'
+  				arg: 'cities',
+  				description: 'Returns a JSON array of all the available cities, mainly to use in City List screen',
+  				type: 'array'
 	    	}
 		}
 	);
-
 
 
 //---------- Get City Details ------------------
