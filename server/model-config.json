@@ -95,8 +95,9 @@
         "sharedMethods": {
           "*": false,
           "addToCart": true,
-          "updateCart": true,
-          "getCart": true
+          "updateCart": false,
+          "getCart": true,
+          "checkout":true
         }
       }
     }
@@ -108,8 +109,8 @@
       "remoting": {
         "sharedMethods": {
           "*": false,
-          "checkout": true,
-          "getOrders": true
+          "checkout": false,
+          "getOrders": false
         }
       }
     }

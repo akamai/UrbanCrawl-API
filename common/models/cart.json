@@ -12,7 +12,7 @@
       "required": true
     },
     "userid": {
-      "type": "number",
+      "type": "string",
       "required": true
     },
     "thumburl": {
