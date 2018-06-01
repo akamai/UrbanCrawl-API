@@ -106,8 +106,8 @@ module.exports = function(Cart) {
 	Cart.remoteMethod(
 	    'addToCart', {
 	    	http: {
-		        path: '/addToCart',
-		        status: 200
+		        path: '/',
+		        verb: 'post'
 	    	},
 	    	accepts: {
 		      	arg: 'items', 
@@ -254,7 +254,7 @@ Cart.getCart = function(userid, cb){
 	Cart.remoteMethod(
 	    'getCart', {
 	    	http: {
-		        path: '/getCart',
+		        path: '/',
 		      	verb: 'get'
 	    	},
 	    	accepts: {

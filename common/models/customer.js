@@ -258,8 +258,8 @@ module.exports = function(Customer) {
 	Customer.remoteMethod(
     'register', {
       http: {
-        path: '/register',
-        verb: 'post'
+        path: '/',
+        verb: 'put'
       },
       accepts: {
 	      	arg: 'items', 
@@ -279,7 +279,7 @@ module.exports = function(Customer) {
 	Customer.remoteMethod(
     'login', {
       http: {
-        path: '/login',
+        path: '/',
         verb: 'post'
       },
       accepts: {
