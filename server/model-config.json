@@ -134,8 +134,8 @@
       "remoting": {
         "sharedMethods": {
           "*": false,
-          "getPublicKey": true,
-          "regenerateKeys": true
+          "getPublicKey": false,
+          "regenerateKeys": false
         }
       }
     }
