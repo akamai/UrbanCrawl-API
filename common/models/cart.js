@@ -33,6 +33,7 @@ module.exports = function(Cart) {
 				Cart.find({
 					where: {cityid: body.cityid, userid: body.userid}
 				}, function(err, cartResult){
+					// The item exists, update it's details
 					if(!err){
 						console.log("######### COUNT ", cartResult.length);
 						if(cartResult.length > 0){
@@ -61,6 +62,11 @@ module.exports = function(Cart) {
 							});
 						}else{
 							//Add new items
+							// {
+							// "cityid": 44,
+							// "userid" : "user-id",
+							// "qty":2
+							// }
 							console.log("##### ADDING NEW ITEM");
 							var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 							Cart.create(
@@ -126,6 +132,9 @@ module.exports = function(Cart) {
 
 
 //------------- UPDATE THE CART ----------------
+/**
+* this method is not visible now, since the POST addToCart takes care of amendment of the cart items
+**/
 
 	Cart.updateCart = function(body, cb){
 		
@@ -227,46 +236,76 @@ module.exports = function(Cart) {
 
 // ---------------- Show all cart items ----------
 
-Cart.getCart = function(userid, cb){
+	Cart.getCart = function(userid, cb){
 
-	if(userid === undefined){
-		var error = new Error("No id was supplied. You must supply a user id");
-  		error.status = 404;
-  		cb(error, null);
-  	}else{
-		Cart.find({
-			where: {userid: userid},
-			fields: {cityid:true, quantity:true, totalprice: true}
-		},
-		function(err, result){
-			if(!err){
-				cb(null, result);
-			}else{
-				var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-		  		error.status = 500;
-		  		cb(error, null);
-			}
-		});
-	}
-};
+		if(userid === undefined){
+			var error = new Error("No id was supplied. You must supply a user id");
+	  		error.status = 404;
+	  		cb(error, null);
+	  	}else{
+			Cart.find({
+				where: {userid: userid},
+				fields: {cityid:true, quantity:true, totalprice: true}
+			},
+			function(err, result){
+				if(!err){
+					cb(null, result);
+				}else{
+					var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+			  		error.status = 500;
+			  		cb(error, null);
+				}
+			});
+		}
+	};
 
 
 	Cart.remoteMethod(
 	    'getCart', {
 	    	http: {
-		        path: '/',
+		        path: '/:userId',
 		      	verb: 'get'
 	    	},
 	    	accepts: {
 		      	arg: 'userid', 
-		      	type: 'number', 
-		      	http: {
-		      		source: 'query'
-		      	}
+		      	type: 'string',
+		      	required: true
 		    },
 	    	returns: {
 				arg: 'item',
 				description: 'Returns an HTTP 200, and all the cart items, if everything goes well',
+				type: 'any'
+	    	}
+		}
+	);
+
+// ---------------- Checkout ----------
+
+	Cart.checkout = function(body, cb){
+
+		var app = require('../../server/server');
+		var Order = app.models.Order;
+    	Order.checkout(body, cb);
+
+	};
+
+
+	Cart.remoteMethod(
+	    'checkout', {
+	    	http: {
+		        path: '/checkout',
+		      	verb: 'put'
+	    	},
+	    	accepts: {
+		      	arg: 'params', 
+		      	type: 'any', 
+		      	http: {
+		      		source: 'body'
+		      	}
+		    },
+	    	returns: {
+				arg: 'items',
+				description: 'Returns an HTTP 200, and the items in cart for this user, if everything goes well',
 				type: 'any'
 	    	}
 		}
