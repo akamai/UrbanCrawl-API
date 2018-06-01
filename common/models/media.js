@@ -3,23 +3,23 @@
 module.exports = function(Media) {
 
 //getAllMediaByPlaceId
-Media.getAllMediaByPlaceId = function(idToFind, mediaType, cb) {
+Media.getAllMediaByPlaceId = function(cityId, idToFind, mediaType, cb) {
 
-  if(idToFind === undefined){
-      var error = new Error("No id was supplied. You must supply a place id");
+  if(cityId === undefined || idToFind === undefined){
+      var error = new Error("Insufficient paramters supplied. You must supply a city id and a place id");
       error.status = 404;
       cb(error, null);
     }else{
     	var whereCondition;
     	if(mediaType === undefined){
-    		whereCondition = {placeid: idToFind};	
+    		whereCondition = {cityid: cityId, placeid: idToFind};	
     	}else{
-    		whereCondition = {placeid: idToFind, type: mediaType};
+    		whereCondition = {cityid: cityId, placeid: idToFind, type: mediaType};
     	}
       Media.find({where: whereCondition, fields: {createdate: false, lastupdated: false} },
       function(err, result){
 
-        if(!err){
+      if(!err){
         if(result.length > 0){
           cb(null, result);
         }else{
@@ -40,7 +40,7 @@ Media.getAllMediaByPlaceId = function(idToFind, mediaType, cb) {
   Media.remoteMethod(
     'getAllMediaByPlaceId', {
       http: {
-        path: '/getAllMediaByPlaceId',
+        path: '/:placeId',
         verb: 'get'
       },
       accepts: [
@@ -48,9 +48,7 @@ Media.getAllMediaByPlaceId = function(idToFind, mediaType, cb) {
 	        arg: 'placeid', 
 	        type: 'number',
 	        description: 'The placeid with which you want to search',
-	        http: {
-	          source: 'query'
-	        }
+	        required: true
 	      },
 	      {
 	    	arg: 'type', 

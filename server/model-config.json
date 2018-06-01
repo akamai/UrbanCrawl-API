@@ -52,7 +52,11 @@
           "*": false,
           "getAllCities": true,
           "getCityDetails": true,
-          "search": true
+          "search": true,
+          "getPlaceDetails": true,
+          "getPlacesOfCity": true,
+          "getMediaOfPlace": true,
+          "getMediaOfCity": true
         }
       }
     }
@@ -64,8 +68,8 @@
       "remoting": {
         "sharedMethods": {
           "*": false,
-          "getAllPlacesOfCity": true,
-          "getPlaceDetails": true
+          "getAllPlacesOfCity": false,
+          "getPlaceDetails": false
         }
       }
     }
@@ -77,8 +81,8 @@
       "remoting": {
         "sharedMethods": {
           "*": false,
-          "getAllMediaByPlaceId": true,
-          "getAllMediaByCityId": true
+          "getAllMediaByPlaceId": false,
+          "getAllMediaByCityId": false
         }
       }
     }
