@@ -7,7 +7,6 @@ module.exports = function(Order) {
 
 
 	Order.checkout = function(body, cb){
-		console.log("##### cityId: ",body);
 		
 		if(body === undefined ||
 			body.userid === undefined){
@@ -19,7 +18,7 @@ module.exports = function(Order) {
 
 		}else{
 			var Cart = app.models.Cart;
-			console.log("### BODY",body);
+
 			Cart.find({
 				where : {userid: body.userid}
 				},
@@ -35,14 +34,14 @@ module.exports = function(Order) {
 								createdate: createdate, updatedate: createdate
 								},
 								function(err, createResult){
-
+									console.log("ORDER: CREATE RESULT: ", createResult);
 								});
 						}
 						//Order made, delete these items from cart
 						Cart.destroyAll({
 							where: {userid: body.userid}},
 							function(err, result){
-								console.log("### CART DELETE", result);
+								console.log("CART DELETE: ", result);
 							});
 						console.log("timestamp ", orderid);
 						cb(null, cartItems);
