@@ -8,6 +8,13 @@ var moment = require("moment");
 //--------------------- ADD TO CART ------------
 module.exports = function(Cart) {
 
+
+	//Add new items
+	// {
+	// "cityid": 44,
+	// "userid" : "user-id",
+	// "qty":2
+	// }
 	Cart.addToCart = function(body, cb){
 		console.log("##### cityId: "+body.cityid+", userID: "+body.userid+", Qty: "+body.qty);
 		if(body === undefined || 
@@ -27,7 +34,6 @@ module.exports = function(Cart) {
 			fields: {id:true, thumburl: true, tour_price: true}
 		},
 		function(err, cityResult){
-			console.log("######## CITY RESULT ", cityResult);
 			if(!err){
 				unitprice = cityResult[0].tour_price;
 				Cart.find({
@@ -35,9 +41,10 @@ module.exports = function(Cart) {
 				}, function(err, cartResult){
 					// The item exists, update it's details
 					if(!err){
-						console.log("######### COUNT ", cartResult.length);
+						console.log("CART: Existing Items Length: ", cartResult.length);
 						if(cartResult.length > 0){
 							//There are items which should be updated
+							console.log("CART: UPDATING EXISTING ITEM");
 							var newQuantity = cartResult[0].quantity+body.qty;
 							var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 							Cart.updateAll(
@@ -45,7 +52,7 @@ module.exports = function(Cart) {
 								{quantity: newQuantity, totalprice: (cityResult[0].tour_price*newQuantity),
 									updatedate: dateNow},
 								function(err, updateInfo){
-									console.log("#### UPDATE RESULT ", updateInfo);
+									console.log("CART: UPDATE RESULT ", updateInfo);
 									Cart.find({
 										where: {cityid: body.cityid, userid: body.userid},
 										fields: {createdate:false, updatedate: false}
@@ -61,13 +68,8 @@ module.exports = function(Cart) {
 									});
 							});
 						}else{
-							//Add new items
-							// {
-							// "cityid": 44,
-							// "userid" : "user-id",
-							// "qty":2
-							// }
-							console.log("##### ADDING NEW ITEM");
+							
+							console.log("CART: ADDING NEW ITEM");
 							var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 							Cart.create(
 								{cityid: body.cityid, userid: body.userid, thumburl: cityResult[0].thumburl, 
