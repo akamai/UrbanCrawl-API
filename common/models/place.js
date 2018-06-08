@@ -116,9 +116,9 @@ Place.getAllPlacesOfCity = function(idToFind, cb) {
         }
       },
       returns: {
-    arg: 'placeDetails',
-    description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied',
-    type: 'Object'
+        arg: 'placeDetails',
+        description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied',
+        type: 'Object'
       }
     }
   );
