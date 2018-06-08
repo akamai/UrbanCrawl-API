@@ -28,6 +28,9 @@
       "required": true
     }
   },
+  "http": {
+    "path" : ":apiVersion/customer"
+  },
   "validations": [],
   "relations": {},
   "acls": [],

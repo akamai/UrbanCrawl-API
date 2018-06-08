@@ -74,6 +74,9 @@
       "foreignKey": ""
     }
   },
+  "http": {
+    "path" : ":apiVersion/cities"
+  },
   "acls": [],
   "methods": {}
 }
