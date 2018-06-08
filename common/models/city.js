@@ -26,15 +26,14 @@ City.disableRemoteMethodByName('__updateById__places');
 City.disableRemoteMethodByName('__findById__places');
 City.disableRemoteMethodByName('__get__places');
 
-var app = require('../../server/server');
-
+var server = require('../../server/server');
 
 //--------- Get All Cities ------------
 City.getAllCities = function(cb) {
 	City.find({fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true} },
 		function(err, result){
 			if(!err){
-				cb(null, result);	
+				cb(null, result);
 			}else{
 				var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
 		  		error.status = 500;
@@ -56,7 +55,8 @@ City.getAllCities = function(cb) {
 	    	returns: {
   				arg: 'cities',
   				description: 'Returns a JSON array of all the available cities, mainly to use in City List screen',
-  				type: 'array'
+  				type: [City],
+          root: true
 	    	}
 		}
 	);
@@ -74,8 +74,8 @@ City.getCityDetails = function(idToFind, cb) {
   	}else{
 
     	City.find({
-    		where: {id: idToFind}, 
-    		fields: {createdate: false, lastupdated: false}, 
+    		where: {id: idToFind},
+    		fields: {createdate: false, lastupdated: false},
     		include: {relation: 'places', scope: {fields: ["id", "name", "heroimage", "herovideo", "description", "numimages", "timings"]}}
     	}, function(err, result){
 
@@ -103,14 +103,15 @@ City.getCityDetails = function(idToFind, cb) {
         verb: 'get'
       },
       accepts: {
-      	arg: 'cityId', 
+      	arg: 'cityId',
       	type: 'number',
         required: true
       },
       returns: {
-    		arg: 'cityDetails',
-    		description: 'Returns a JSON object containing details and places of a city whose ID is supplied',
-    		type: 'Object'
+        arg: 'city',
+        description: 'Returns a JSON object containing details and places of a city whose ID is supplied',
+        type: City,
+        root: true
       }
     }
   );
@@ -119,7 +120,7 @@ City.getCityDetails = function(idToFind, cb) {
 //------------- Get Places of a city -------------
 
 City.getPlacesOfCity = function(cityId, cb) {
-    var Place = app.models.Place;
+    var Place = server.models.Place;
     Place.getAllPlacesOfCity(cityId, cb);
 };
 
@@ -130,14 +131,15 @@ City.remoteMethod(
       verb: 'get'
     },
     accepts: {
-      arg: 'cityId', 
+      arg: 'cityId',
       type: 'number',
       required: true
     },
     returns: {
       arg: 'places',
       description: 'Returns a JSON object containing details and places of a city whose ID is supplied',
-      type: 'array'
+      type: [server.model.Place],
+      root: true
     }
   }
 );
@@ -156,7 +158,7 @@ City.search = function(keyword, cb) {
   	}else{
 
     	City.find({
-    		where: {name: {like: "%"+keyword+"%"}}, 
+    		where: {name: {like: "%"+keyword+"%"}},
     		fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true}
     	},
     	function(err, result){
@@ -185,7 +187,7 @@ City.search = function(keyword, cb) {
         verb: 'get'
       },
       accepts: {
-      	arg: 'q', 
+      	arg: 'q',
       	type: 'string',
         required: true
       },
@@ -201,7 +203,7 @@ City.search = function(keyword, cb) {
 //------------- Get Place Details -------------
 
 City.getPlaceDetails = function(cityId, placeId, cb) {
-    var Place = app.models.Place;
+    var Place = server.models.Place;
     Place.getPlaceDetails(cityId, placeId, cb);
 };
 
@@ -213,12 +215,12 @@ City.remoteMethod(
     },
     accepts: [
       {
-        arg: 'cityId', 
+        arg: 'cityId',
         type: 'number',
         required: true
       },
       {
-        arg: 'placeId', 
+        arg: 'placeId',
         type: 'number',
         required: true
       }
@@ -226,7 +228,7 @@ City.remoteMethod(
     returns: {
       arg: 'placeDetails',
       description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied',
-      type: 'Object'
+      type: server.models.Media
     }
   }
 );
@@ -235,7 +237,7 @@ City.remoteMethod(
 //------------- Get All Media of Place according to type supplied -------------
 
 City.getMediaOfPlace = function(cityId, placeId, type, cb) {
-    var Media = app.models.Media;
+    var Media = server.models.Media;
     Media.getAllMediaByPlaceId(cityId, placeId, type, cb);
   };
 
@@ -247,17 +249,17 @@ City.getMediaOfPlace = function(cityId, placeId, type, cb) {
       },
       accepts: [
         {
-          arg: 'cityId', 
+          arg: 'cityId',
           type: 'number',
           required: true
         },
         {
-          arg: 'placeId', 
+          arg: 'placeId',
           type: 'number',
           required: true
         },
         {
-          arg: 'type', 
+          arg: 'type',
           type: 'string',
           required: true
         }
@@ -274,7 +276,7 @@ City.getMediaOfPlace = function(cityId, placeId, type, cb) {
 //------------- Get All Media of a City according to type supplied -------------
 
 City.getMediaOfCity = function(cityId, type, cb) {
-    var Media = app.models.Media;
+    var Media = server.models.Media;
     Media.getAllMediaByCityId(cityId, type, cb);
   };
 
@@ -286,12 +288,12 @@ City.getMediaOfCity = function(cityId, type, cb) {
       },
       accepts: [
         {
-          arg: 'cityId', 
+          arg: 'cityId',
           type: 'number',
           required: true
         },
         {
-          arg: 'type', 
+          arg: 'type',
           type: 'string',
           required: true
         }
