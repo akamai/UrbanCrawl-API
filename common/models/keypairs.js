@@ -93,7 +93,7 @@ module.exports = function(Keypairs) {
 	        verb: 'get'
 	      },
 	      accepts: {
-		      	arg: 'items',
+		      	arg: 'items', 
 		      	type: 'string'	    	},
 	      returns: {
 		    arg: 'result',
@@ -110,7 +110,7 @@ module.exports = function(Keypairs) {
 	        verb: 'get'
 	      },
 	      accepts: {
-		      	arg: 'items',
+		      	arg: 'items', 
 		      	type: 'string'	    	},
 	      returns: {
 		    arg: 'result',
