@@ -1,20 +1,30 @@
+/*
+ * Copyright 2018. Akamai Technologies, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 'use strict';
 
 module.exports = function(City) {
 
-/**
-disableRemoteMethod gives a deprecation warning as of now, but it's
-suggested alternative, disableRemoteMethodByName doesn't seem to work.
-So sticking with disableRemoteMethod as of now
-**/
-  
-City.disableRemoteMethod('__count__places', false );
-City.disableRemoteMethod('__create__places', false );
-City.disableRemoteMethod('__delete__places', false );
-City.disableRemoteMethod('__destroyById__places', false );
-City.disableRemoteMethod('__updateById__places', false );
-City.disableRemoteMethod('__findById__places', false );
-City.disableRemoteMethod('__get__places', false );
+City.disableRemoteMethodByName('__count__places');
+City.disableRemoteMethodByName('__create__places');
+City.disableRemoteMethodByName('__delete__places');
+City.disableRemoteMethodByName('__destroyById__places');
+City.disableRemoteMethodByName('__updateById__places');
+City.disableRemoteMethodByName('__findById__places');
+City.disableRemoteMethodByName('__get__places');
 
 var app = require('../../server/server');
 
