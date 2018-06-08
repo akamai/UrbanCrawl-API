@@ -1,0 +1,12 @@
+{
+  "name": "login",
+  "plural": "login",
+  "base": "account",
+  "type": "Login",
+  "idInjection": false,
+  "excludeBaseProperties": ["id", "userid", "full_name", "createdate"],
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

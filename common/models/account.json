@@ -1,7 +1,8 @@
 {
-  "name": "customer",
-  "plural": "customer",
+  "name": "account",
+  "plural": "account",
   "base": "PersistedModel",
+  "type": "Account",
   "idInjection": true,
   "options": {
     "validateUpsert": true
@@ -28,6 +29,7 @@
       "required": true
     }
   },
+  "hidden": ["id"],
   "validations": [],
   "relations": {},
   "acls": [],

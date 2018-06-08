@@ -129,8 +129,17 @@
     }
   },
   "keypairs": {
+  "login": {
     "dataSource": "db_name",
     "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "*": false
+        }
+      }
+    }
+  },
     "options": {
       "remoting": {
         "sharedMethods": {

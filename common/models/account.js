@@ -1,13 +1,29 @@
+/*
+ * Copyright 2018. Akamai Technologies, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 'use strict';
 
 var app = require('../../server/server');
 var EdgeGrid = require('edgegrid');
 
-module.exports = function(Customer) {
+module.exports = function(Account) {
 
-	Customer.register = function(body, cb){
+	Account.register = function(body, cb){
 
-		if(body === undefined || 
+		if(body === undefined ||
 			body.email === undefined ||
 			body.password === undefined ||
 			body.name === undefined){
@@ -41,7 +57,7 @@ module.exports = function(Customer) {
 
 
 		var registerWithKey = function(pair){
-				Customer.count({email: body.email},function(err, count){
+				Account.count({email: body.email},function(err, count){
 				if(!err){
 					if(count == 0){
 
@@ -50,10 +66,10 @@ module.exports = function(Customer) {
 						bcrypt.hash(plainPassword, saltRounds, function(err, hash){
 							if(!err){
 								const uuidv1 = require('uuid/v1');
-								
+
 								var userId = uuidv1();
 								var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-								Customer.create(
+								Account.create(
 									{userid: userId, email: body.email, password: hash, full_name: body.name, createdate: dateNow},
 									function(err, createResult){
 										if(!err){
@@ -63,11 +79,11 @@ module.exports = function(Customer) {
 											sha256.update(userId);
 											var sha256Token = sha256.digest("base64");
 
-											var CustomerToken = app.models.Token;
+											var AccountToken = app.models.Token;
 											var moment = require("moment");
 											var createdate = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 
-											CustomerToken.create({token: sha256Token, userid: userId, createdate: createdate},
+											AccountToken.create({token: sha256Token, userid: userId, createdate: createdate},
 												function(err, result){
 													if(!err){
 														cb(null, {status: "ok", token: sha256Token});
@@ -97,9 +113,9 @@ module.exports = function(Customer) {
 		}
 	}
 
-	Customer.login = function(body, cb){
+	Account.login = function(body, cb){
 
-		if(body === undefined || 
+		if(body === undefined ||
 			body.email === undefined ||
 			body.password === undefined){
 				var error = new Error("Insufficient parameters supplied.");
@@ -124,7 +140,7 @@ module.exports = function(Customer) {
 		});
 
 		var loginWithKey = function(pair){
-		Customer.find({where: {email: body.email}},
+		Account.find({where: {email: body.email}},
 			function(err, findResults){
 				if(!err){
 					if(findResults.length > 0){
@@ -139,7 +155,7 @@ module.exports = function(Customer) {
 										var sha256 = crypto.createHash("sha256");
 										sha256.update(findResults[0].userid);
 										var sha256Token = sha256.digest("base64");
-										
+
 										cb(null, {status: "ok", token: sha256Token});
 
 							    } else if (valid == false) {
@@ -160,9 +176,9 @@ module.exports = function(Customer) {
 	}
 
 	var sendTokenToGateway = function(sha256Token){
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
-      		process.env.AKAMAI_CLIENT_SECRET, 
-      		process.env.AKAMAI_ACCESS_TOKEN, 
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      		process.env.AKAMAI_CLIENT_SECRET,
+      		process.env.AKAMAI_ACCESS_TOKEN,
       		process.env.AKAMAI_HOST);
 
       	eg.auth({
@@ -192,9 +208,9 @@ module.exports = function(Customer) {
 
 	var createNewCollectionAndSendToken = function(sha256Token){
 		var EdgeGrid = require('edgegrid');
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
-      		process.env.AKAMAI_CLIENT_SECRET, 
-      		process.env.AKAMAI_ACCESS_TOKEN, 
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      		process.env.AKAMAI_CLIENT_SECRET,
+      		process.env.AKAMAI_ACCESS_TOKEN,
       		process.env.AKAMAI_HOST);
 
       	eg.auth({
@@ -204,10 +220,10 @@ module.exports = function(Customer) {
 		    	"Content-Type": "application/json"
 		    },
 		    body: {
-		    	"name": "UrbanCrawlCustomersCollection",
+		    	"name": "UrbanCrawlUsers",
 			    "contractId": "C-1FRYVV3",
 			    "groupId": 68817,
-			    "description": "Collection for Urban Crawl Customers"
+			    "description": "Collection for Urban Crawl Users"
 		    }
 		});
 
@@ -224,9 +240,9 @@ module.exports = function(Customer) {
 
 	var sendToken = function(collectionId, sha256Token){
 		var EdgeGrid = require('edgegrid');
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
-      		process.env.AKAMAI_CLIENT_SECRET, 
-      		process.env.AKAMAI_ACCESS_TOKEN, 
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      		process.env.AKAMAI_CLIENT_SECRET,
+      		process.env.AKAMAI_ACCESS_TOKEN,
       		process.env.AKAMAI_HOST);
 
       	eg.auth({
@@ -244,7 +260,7 @@ module.exports = function(Customer) {
 			    ],
 			    "value": sha256Token,
 			    "label": "Access Token",
-			    "description": "Access Token for Urban Crawl Customer"
+			    "description": "Access Token for Urban Crawl Account"
 		    }
 		});
 
@@ -255,44 +271,44 @@ module.exports = function(Customer) {
 		});
 	}
 
-	Customer.remoteMethod(
+	Account.remoteMethod(
     'register', {
       http: {
         path: '/',
         verb: 'put'
       },
       accepts: {
-	      	arg: 'items', 
-	      	type: 'object', 
-	      	http: {
-	      		source: 'body'
-	      	}
+        arg: 'request',
+        type: 'account',
+        http: {
+          source: 'body'
+        }
 	    },
       returns: {
-	    arg: 'result',
-	    description: 'Returns a JWT key when successful',
-	    type: 'string'
+        arg: 'result',
+        description: 'Returns a JWT key when successful',
+        type: 'string'
       }
     }
   );
 
-	Customer.remoteMethod(
+	Account.remoteMethod(
     'login', {
       http: {
         path: '/',
         verb: 'post'
       },
       accepts: {
-	      	arg: 'items', 
-	      	type: 'object', 
-	      	http: {
-	      		source: 'body'
-	      	}
+        arg: 'request',
+        type: 'login',
+        http: {
+          source: 'body'
+        }
 	    },
       returns: {
-	    arg: 'result',
-	    description: 'Returns a JWT key when successful',
-	    type: 'string'
+        arg: 'result',
+        description: 'Returns a JWT key when successful',
+        type: 'string'
       }
     }
   );
