@@ -9,13 +9,17 @@
       "description": "Set the NODE_ENV to 'demo' to automatically seed the DB on deploy",
       "value": "production"
     },
-    "JWT_USER_PASSWORD": {
-      "description": "Psuedo password used within the app",
-      "generator": "secret"
+    "AKAMAI_HOST": {
+      "description": "Akamai Edgegrid Credential: Hostname (e.g. 'akab-XXXXXX.luna.akamaiapis.net')"
     },
-    "SECRET_KEY": {
-      "description": "Secret Key used to generate RSA keypair",
-      "generator": "secret"
+    "AKAMAI_ACCESS_TOKEN": {
+      "description": "Akamai Edgegrid Credential: Access Token (e.g. 'akab-xxxxxxxxxxx-xxxxxxxxxxxxx')"
+    },
+    "AKAMAI_CLIENT_TOKEN": {
+      "description": "Akamai Edgegrid Credential: Client Token (e.g. 'akab-xxxxxxxxxxx-xxxxxxxxxxxxx')"
+    },
+    "AKAMAI_CLIENT_SECRET": {
+      "description": "Akamai Edgegrid Credential: Client Secret"
     }
   },
   "scripts": {
