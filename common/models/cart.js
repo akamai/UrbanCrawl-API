@@ -30,16 +30,14 @@ module.exports = function(Cart) {
 	// "userid" : "user-id",
 	// "qty":2
 	// }
-	Cart.addToCart = function(version, body, cb){
+	Cart.addToCart = function(body, cb){
 
-		switch(version.apiVersion){
-	      case 'v2':
 
-	      	if(body === undefined || 
-				body.cityid === undefined || 
+	      	if(body === undefined ||
+				body.cityid === undefined ||
 				body.userid === undefined ||
 				body.qty === undefined){
-				
+
 				var error = new Error("Supplied parameters are insufficient.");
 		  		error.status = 400;
 		  		cb(error, null);
@@ -48,7 +46,7 @@ module.exports = function(Cart) {
 			var City = app.models.City;
 
 			City.find({
-				where: {id: body.cityid}, 
+				where: {id: body.cityid},
 				fields: {id:true, thumburl: true, tour_price: true}
 			},
 			function(err, cityResult){
@@ -86,12 +84,12 @@ module.exports = function(Cart) {
 										});
 								});
 							}else{
-								
+
 								console.log("CART: ADDING NEW ITEM");
 								var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 								Cart.create(
-									{cityid: body.cityid, userid: body.userid, thumburl: cityResult[0].thumburl, 
-										unitprice: cityResult[0].tour_price, quantity: body.qty, 
+									{cityid: body.cityid, userid: body.userid, thumburl: cityResult[0].thumburl,
+										unitprice: cityResult[0].tour_price, quantity: body.qty,
 										totalprice: (cityResult[0].tour_price*body.qty), createdate: dateNow,
 										updatedate: dateNow},
 									function(err, createResult){
@@ -127,13 +125,6 @@ module.exports = function(Cart) {
 			  		cb(error, null);
 				}
 			});
-
-	      break;
-	      default:
-	        var error = new Error("You must supply a valid api version");
-	        error.status = 404;
-	        cb(error, null);
-	    }			
 	};
 
 	Cart.remoteMethod(
@@ -144,16 +135,8 @@ module.exports = function(Cart) {
 	    	},
 	    	accepts: [
 		    	{
-		           arg: 'version', 
-		           type: 'object', 
-		           description: 'API version eg. v1, v2, etc.',
-		           http: function (context) {
-		               return {apiVersion: context.req.apiVersion};
-		           }
-		        },
-		    	{
-			      	arg: 'items', 
-			      	type: 'any', 
+			      	arg: 'items',
+			      	type: 'any',
 			      	http: {
 			      		source: 'body'
 			      	}
@@ -173,14 +156,12 @@ module.exports = function(Cart) {
 * this method is not visible now, since the POST addToCart takes care of amendment of the cart items
 **/
 
-	Cart.updateCart = function(version, body, cb){
-		
-		switch(version.apiVersion){
-	      case 'v2':
+	Cart.updateCart = function(body, cb){
+
 	      	var City = app.models.City;
 			if(body.qty > 0){
 				City.find({
-					where: {id: body.cityid}, 
+					where: {id: body.cityid},
 					fields: {id:true, thumburl: true, tour_price: true}
 				},
 				function(err, result){
@@ -246,12 +227,6 @@ module.exports = function(Cart) {
 						}
 					});
 			}
-	      break;
-	      default:
-	        var error = new Error("You must supply a valid api version");
-	        error.status = 404;
-	        cb(error, null);
-	    }
 	};
 
 
@@ -263,16 +238,8 @@ module.exports = function(Cart) {
 	    	},
 	    	accepts: [
 		    	{
-		           arg: 'version', 
-		           type: 'object', 
-		           description: 'API version eg. v1, v2, etc.',
-		           http: function (context) {
-		               return {apiVersion: context.req.apiVersion};
-		           }
-		        },
-		    	{
-			      	arg: 'items', 
-			      	type: 'any', 
+			      	arg: 'items',
+			      	type: 'any',
 			      	http: {
 			      		source: 'body'
 			      	}
@@ -291,10 +258,8 @@ module.exports = function(Cart) {
 
 // ---------------- Show all cart items ----------
 
-	Cart.getCart = function(version, userid, cb){
+	Cart.getCart = function(userid, cb){
 
-		switch(version.apiVersion){
-	      case 'v2':
 			if(userid === undefined){
 				var error = new Error("No id was supplied. You must supply a user id");
 				error.status = 404;
@@ -314,12 +279,6 @@ module.exports = function(Cart) {
 					}
 				});
 			}
-	      break;
-	      default:
-	        var error = new Error("You must supply a valid api version");
-	        error.status = 404;
-	        cb(error, null);
-	    }
 	};
 
 
@@ -331,15 +290,7 @@ module.exports = function(Cart) {
 	    	},
 	    	accepts: [
 		    	{
-		           arg: 'version', 
-		           type: 'object', 
-		           description: 'API version eg. v1, v2, etc.',
-		           http: function (context) {
-		               return {apiVersion: context.req.apiVersion};
-		           }
-		        },
-		    	{
-			      	arg: 'userid', 
+			      	arg: 'userid',
 			      	type: 'string',
 			      	required: true
 			    }
@@ -354,20 +305,12 @@ module.exports = function(Cart) {
 
 // ---------------- Checkout ----------
 
-	Cart.checkout = function(version, body, cb){
+	Cart.checkout = function(body, cb){
 
 
-		switch(version.apiVersion){
-	      case 'v2':
 	      	var app = require('../../server/server');
 			var Order = app.models.Order;
 	    	Order.checkout(body, cb);
-	      break;
-	      default:
-	        var error = new Error("You must supply a valid api version");
-	        error.status = 404;
-	        cb(error, null);
-	    }
 	};
 
 
@@ -378,17 +321,9 @@ module.exports = function(Cart) {
 		      	verb: 'put'
 	    	},
 	    	accepts: [
-	    		{
-		           arg: 'version', 
-		           type: 'object', 
-		           description: 'API version eg. v1, v2, etc.',
-		           http: function (context) {
-		               return {apiVersion: context.req.apiVersion};
-		           }
-		        },
 		    	{
-			      	arg: 'params', 
-			      	type: 'any', 
+			      	arg: 'params',
+			      	type: 'any',
 			      	http: {
 			      		source: 'body'
 			      	}

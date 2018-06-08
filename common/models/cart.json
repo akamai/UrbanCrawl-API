@@ -41,7 +41,7 @@
     }
   },
   "http": {
-    "path" : ":apiVersion/cart"
+    "path" : "/v2/cart"
   },
   "validations": [],
   "relations": {},

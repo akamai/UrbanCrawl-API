@@ -32,6 +32,9 @@
   "hidden": ["id"],
   "validations": [],
   "relations": {},
+  "http": {
+    "path" : "/v2/account"
+  },
   "acls": [],
   "methods": {}
 }
