@@ -1,7 +1,7 @@
 {
   "name": "@akamai/urbancrawl-api",
   "description": "UrbanCrawl API (Demo API for Akamai Developer)",
-  "version": "2.0.2.0.0",
+  "version": "2.0.0",
   "homepage": "https://developer.akamai.com",
   "bugs": "https://github.com/akamai/urbancrawl-api/issues",
   "license": "Apache-2.0",
