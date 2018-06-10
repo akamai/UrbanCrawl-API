@@ -1,6 +1,6 @@
 module.exports = {
 	"restApiRoot": '/v2',
-	"host": process.env.HOST || 'localhost',
+	"host": process.env.HOST || '0.0.0.0',
 	"port": process.env.PORT || 3000,
   "remoting": {
     "context": false,
