@@ -10,7 +10,7 @@
   "properties": {
     "userid": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "email": {
       "type": "string",
@@ -26,15 +26,12 @@
     },
     "createdate": {
       "type": "date",
-      "required": true
+      "required": false
     }
   },
-  "hidden": ["id"],
+  "hidden": ["id", "userid", "createdate"],
   "validations": [],
   "relations": {},
-  "http": {
-    "path" : "/v2/account"
-  },
   "acls": [],
   "methods": {}
 }

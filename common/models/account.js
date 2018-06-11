@@ -19,295 +19,347 @@
 var app = require('../../server/server');
 var EdgeGrid = require('edgegrid');
 
-module.exports = function(Account) {
+module.exports = function (Account) {
 
-	Account.register = function(body, cb){
+// {
+// "email" : "foo1@bar1.com",
+// "password" : "foobar1",
+// "name" : "Foo Bar"
+// }
 
-		if(body === undefined ||
-			body.email === undefined ||
-			body.password === undefined ||
-			body.name === undefined){
-				var env = process.env.NODE_ENV;
-				var error = new Error("Insufficient parameters supplied. env: "+env);
-				error.status = 400;
-				cb(error, null);
-				return;
-		}
+Account.register = function (body, cb) {
 
-		var bcrypt = require('bcrypt');
-		var moment = require("moment");
-		var jwt = require('jsonwebtoken');
+  if (body === undefined ||
+    body.email === undefined ||
+    body.password === undefined ||
+    body.full_name === undefined) {
+    var env = process.env.NODE_ENV;
+    var error = new Error("Insufficient parameters supplied. env: " + env);
+    error.status = 400;
+    cb(error, null);
+    return;
+  }
 
-		const saltRounds = 10;
+  var bcrypt = require('bcrypt');
+  var moment = require("moment");
+  const saltRounds = 10;
 
-		//trying to find existing keys to use
-		var app = require('../../server/server');
-		var Keypairs = app.models.keypairs;
+  var registerWithKey = function (pair) {
+    Account.count({email: body.email}, function (err, count) {
+      if (!err) {
+        if (count == 0) {
 
-		Keypairs.find(function(err, keys){
-			if(!err){
-				registerWithKey(keys);
-			}else{
-				var error = new Error("Couldn't register. Reason : unavailable encryption resources. Please contact us");
-				error.status = 500;
-				cb(error, null);
-				return;
-			}
-		});
+          var plainPassword = body.password;
 
+          bcrypt.hash(plainPassword, saltRounds, function (err, hash) {
+            if (!err) {
+              const uuidv1 = require('uuid/v1');
 
-		var registerWithKey = function(pair){
-				Account.count({email: body.email},function(err, count){
-				if(!err){
-					if(count == 0){
+              var userId = uuidv1();
+              var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+              Account.create(
+                {userid: userId, email: body.email, password: hash, full_name: body.full_name, createdate: dateNow},
+                function (err, createResult) {
+                  if (!err) {
 
-						var plainPassword = body.password;
+                    var crypto = require("crypto");
+                    var sha256 = crypto.createHash("sha256");
+                    sha256.update(userId + "-" + dateNow);
+                    var sha256Token = sha256.digest("hex");
 
-						bcrypt.hash(plainPassword, saltRounds, function(err, hash){
-							if(!err){
-								const uuidv1 = require('uuid/v1');
+                    var CustomerToken = app.models.Token;
+                    var moment = require("moment");
+                    var createdate = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 
-								var userId = uuidv1();
-								var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-								Account.create(
-									{userid: userId, email: body.email, password: hash, full_name: body.name, createdate: dateNow},
-									function(err, createResult){
-										if(!err){
+                    CustomerToken.create({token: sha256Token, userid: userId, createdate: createdate},
+                      function (err, result) {
+                        if (!err) {
+                          if (!sendTokenToGateway(sha256Token)) {
+                            cb(new Error("Unable to create key"), null);
+                          }
+                          cb(null, {status: "ok", token: sha256Token});
+                        } else {
+                          cb(err, null);
+                        }
+                      });
 
-											var crypto = require("crypto");
-											var sha256 = crypto.createHash("sha256");
-											sha256.update(userId);
-											var sha256Token = sha256.digest("base64");
+                  } else {
+                    cb(err, null);
+                  }
+                });
+            } else {
+              cb(err, null);
+            }
+          });
+        } else {
+          cb(null, {status: "error", message: "Email already exists"});
+        }
+        return;
+      } else {
+        cb(err, null);
+      }
+    });
+  };
 
-											var AccountToken = app.models.Token;
-											var moment = require("moment");
-											var createdate = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+  registerWithKey();
+};
 
-											AccountToken.create({token: sha256Token, userid: userId, createdate: createdate},
-												function(err, result){
-													if(!err){
-														cb(null, {status: "ok", token: sha256Token});
+// {
+// "email" : "foo1@bar1.com",
+// "password" : "foobar1",
+// }
 
-														sendTokenToGateway(sha256Token);
-													}else{
-														cb(err, null);
-													}
-												});
+  Account.login = function (version, body, cb) {
 
-										}else{
-											cb(err, null);
-										}
-								});
-							}else{
-								cb(err, null);
-							}
-						});
-					}else{
-						cb(null, {status: "error", message: "Email already exists"});
-					}
-					return;
-				}else{
-					cb(err, null);
-				}
-			});
-		}
-	}
+    if (body === undefined ||
+      body.email === undefined ||
+      body.password === undefined) {
+      var error = new Error("Insufficient parameters supplied.");
+      error.status = 400;
+      cb(error, null);
+      return;
+    }
 
-	Account.login = function(body, cb){
+    //trying to find existing keys to use
+    var app = require('../../server/server');
+    var Keypairs = app.models.keypairs;
 
-		if(body === undefined ||
-			body.email === undefined ||
-			body.password === undefined){
-				var error = new Error("Insufficient parameters supplied.");
-				error.status = 400;
-				cb(error, null);
-				return;
-		}
+    Keypairs.find(function (err, keys) {
+      if (!err) {
+        loginWithKey(keys);
+      } else {
+        var error = new Error("Couldn't login. Reason : unavailable encryption resources. Please contact us");
+        error.status = 500;
+        cb(error, null);
+        return;
+      }
+    });
 
-		//trying to find existing keys to use
-		var app = require('../../server/server');
-		var Keypairs = app.models.keypairs;
+    var loginWithKey = function (pair) {
+      Account.find({where: {email: body.email}},
+        function (err, findResults) {
+          if (!err) {
+            if (findResults.length > 0) {
 
-		Keypairs.find(function(err, keys){
-			if(!err){
-				loginWithKey(keys);
-			}else{
-				var error = new Error("Couldn't login. Reason : unavailable encryption resources. Please contact us");
-				error.status = 500;
-				cb(error, null);
-				return;
-			}
-		});
+              var bcrypt = require('bcrypt');
 
-		var loginWithKey = function(pair){
-		Account.find({where: {email: body.email}},
-			function(err, findResults){
-				if(!err){
-					if(findResults.length > 0){
+              bcrypt.compare(body.password, findResults[0].password, function (err, valid) {
+                if (!err) {
+                  if (valid == true) {
 
-						var bcrypt = require('bcrypt');
+                    var crypto = require("crypto");
+                    var sha256 = crypto.createHash("sha256");
+                    sha256.update(findResults[0].userid);
+                    var sha256Token = sha256.digest("base64");
 
-						bcrypt.compare(body.password, findResults[0].password, function(err, valid) {
-							if(!err){
-							    if (valid == true) {
+                    cb(null, {status: "ok", token: sha256Token});
 
-										var crypto = require("crypto");
-										var sha256 = crypto.createHash("sha256");
-										sha256.update(findResults[0].userid);
-										var sha256Token = sha256.digest("base64");
+                  } else if (valid == false) {
+                    cb(null, {status: "error", message: "Incorrect Password"});
+                  }
+                } else {
+                  cb(err, null);
+                }
+              });
+            } else {
+              cb(null, {status: "error", message: "email not found"});
+            }
+          } else {
+            cb(err, null);
+          }
+        });
+    }
+  };
 
-										cb(null, {status: "ok", token: sha256Token});
+  const ApiKeyGroup = "UrbanCrawlUserCollection";
 
-							    } else if (valid == false) {
-							        cb(null, {status: "error", message: "Incorrect Password"});
-							    }
-							}else{
-								cb(err, null);
-							}
-						});
-					}else{
-						cb(null, {status: "error", message: "email not found"});
-					}
-				}else{
-					cb(err, null);
-				}
-			});
-		}
-	}
+  var sendTokenToGateway = function (sha256Token) {
+    var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      process.env.AKAMAI_CLIENT_SECRET,
+      process.env.AKAMAI_ACCESS_TOKEN,
+      process.env.AKAMAI_HOST);
 
-	var sendTokenToGateway = function(sha256Token){
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
-      		process.env.AKAMAI_CLIENT_SECRET,
-      		process.env.AKAMAI_ACCESS_TOKEN,
-      		process.env.AKAMAI_HOST);
+    eg.auth({
+      path: '/apikey-manager-api/v1/collections',
+      method: 'GET',
+      headers: {},
+      body: {}
+    });
 
-      	eg.auth({
-		    path: '/apikey-manager-api/v1/collections',
-		    method: 'GET',
-		    headers: {},
-		    body: {}
-		});
+    try {
+      eg.send(function (data, response) {
+        console.log("sendTokenToGateway: Listing all collections...");
 
-		eg.send(function(data, response) {
-		    console.log("sendTokenToGateway: Listing all collections...");
+        data = JSON.parse(response.body);
+        console.log("sendTokenToGateway: Status: ", response.statusCode);
+        console.log("sendTokenToGateway: Data: ", data);
+        if (response.statusCode != 200) {
+          console.log(response.statusCode, response.statusMessage);
+          throw "Unable to retrieve key collections";
+        }
 
-		    data = JSON.parse(response.body);
-		    console.log("sendTokenToGateway: Status: ",response.statusCode);
-		    console.log("sendTokenToGateway: Data: ",data);
-		    if(response.statusCode == 200 || response.statusMessage == "ok"){
-			    if(data.length > 0){
-			    	console.log("sendTokenToGateway: Collection present, going to send token");
-			    	sendToken(data[0].id, sha256Token);
-			    }else{
-			    	console.log("sendTokenToGateway: Collection not present, going to create a collection");
-			    	createNewCollectionAndSendToken(sha256Token);
-			    }
-			}
-		});
-	}
+        if (data.length > 0) {
+          for (var i in data) {
+            if (data[i].name == ApiKeyGroup) {
+              console.log("sendTokenToGateway: Collection present, going to send token");
+              if (!sendToken(data[i].id, sha256Token)) {
+                throw "Unable to create key";
+              }
 
-	var createNewCollectionAndSendToken = function(sha256Token){
-		var EdgeGrid = require('edgegrid');
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
-      		process.env.AKAMAI_CLIENT_SECRET,
-      		process.env.AKAMAI_ACCESS_TOKEN,
-      		process.env.AKAMAI_HOST);
+              return true;
+            }
+          }
+        }
 
-      	eg.auth({
-		    path: '/apikey-manager-api/v1/collections',
-		    method: 'POST',
-		    headers: {
-		    	"Content-Type": "application/json"
-		    },
-		    body: {
-		    	"name": "UrbanCrawlUsers",
-			    "contractId": "C-1FRYVV3",
-			    "groupId": 68817,
-			    "description": "Collection for Urban Crawl Users"
-		    }
-		});
+        console.log("sendTokenToGateway: Collection not present, going to create a collection");
+        if (!createNewCollectionAndSendToken(sha256Token)) {
+          throw "Unable to create key";
+        }
+      });
+    } catch (e) {
+      return false;
+    }
 
-		eg.send(function(data, response) {
-		    console.log("createNewCollectionAndSendToken: Listing all collections...");
-		    data = JSON.parse(response.body);
-		    console.log("createNewCollectionAndSendToken: Data ",data);
-		    console.log("createNewCollectionAndSendToken: Response status: ",response.statusCode);
-		    if(response.statusCode == 200 || response.statusMessage == "ok"){
-		    	sendToken(data[0].id, sha256Token);
-			}
-		});
-	}
+    return true;
+  };
 
-	var sendToken = function(collectionId, sha256Token){
-		var EdgeGrid = require('edgegrid');
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
-      		process.env.AKAMAI_CLIENT_SECRET,
-      		process.env.AKAMAI_ACCESS_TOKEN,
-      		process.env.AKAMAI_HOST);
+  var createNewCollectionAndSendToken = function (sha256Token) {
+    var EdgeGrid = require('edgegrid');
+    var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      process.env.AKAMAI_CLIENT_SECRET,
+      process.env.AKAMAI_ACCESS_TOKEN,
+      process.env.AKAMAI_HOST);
 
-      	eg.auth({
-		    path: '/apikey-manager-api/v1/keys',
-		    method: 'POST',
-		    headers: {
-		    	"Content-Type": "application/json"
-		    },
-		    body: {
-		    	"collectionId": collectionId,
-			    "mode": "CREATE_ONE",
-			    "tags": [
-			        "single",
-			        "new"
-			    ],
-			    "value": sha256Token,
-			    "label": "Access Token",
-			    "description": "Access Token for Urban Crawl Account"
-		    }
-		});
+    eg.auth({
+      path: '/apikey-manager-api/v1/collections',
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: {
+        "name": "UrbanCrawlUserCollection",
+        "contractId": "C-1FRYVV3",
+        "groupId": 111340,
+        "description": "Collection for UrbanCrawl Users",
+        "quota": {
+          "enabled": true,
+          "value": 100,
+          "interval": "HOUR_1",
+          "headers": {
+            "denyLimitHeaderShown": true,
+            "denyRemainingHeaderShown": true,
+            "denyNextHeaderShown": true,
+            "allowLimitHeaderShown": true,
+            "allowRemainingHeaderShown": true,
+            "allowResetHeaderShown": true
+          }
+        }
+      }
+    });
 
-		eg.send(function(data, response) {
-		    data = JSON.parse(response.body);
-		    console.log("sendToken: Data ",data);
-		    console.log("sendToken Status: ",response.statusCode);
-		});
-	}
+    try {
+      eg.send(function (data, response) {
+        console.log("createNewCollectionAndSendToken: Listing all collections...");
+        data = JSON.parse(response.body);
+        console.log("createNewCollectionAndSendToken: Data ", data);
+        console.log("createNewCollectionAndSendToken: Response status: ", response.statusCode);
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          if (!sendToken(data.id, sha256Token)) {
+            throw "Unable to create key";
+          }
+        } else {
+          throw "Unable to create collection";
+        }
+      });
+    } catch (e) {
+      return false;
+    }
 
-	Account.remoteMethod(
+    return true;
+  };
+
+  var sendToken = function (collectionId, sha256Token) {
+    var EdgeGrid = require('edgegrid');
+    var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      process.env.AKAMAI_CLIENT_SECRET,
+      process.env.AKAMAI_ACCESS_TOKEN,
+      process.env.AKAMAI_HOST);
+
+    eg.auth({
+      path: '/apikey-manager-api/v1/keys',
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: {
+        "collectionId": collectionId,
+        "mode": "CREATE_ONE",
+        "tags": [
+          "single",
+          "new"
+        ],
+        "value": sha256Token,
+        "label": "Access Token",
+        "description": "Access Token for Urban Crawl User"
+      }
+    });
+
+    try {
+      eg.send(function (data, response) {
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          data = JSON.parse(response.body);
+          console.log("sendToken: Data ", data);
+          console.log("sendToken Status: ", response.statusCode);
+        }
+      });
+    } catch (e) {
+      return false;
+    }
+
+    return true;
+  };
+
+  Account.remoteMethod(
     'register', {
       http: {
         path: '/',
         verb: 'put'
       },
-      accepts: {
-        arg: 'request',
-        type: 'account',
-        http: {
-          source: 'body'
+      accepts: [
+        {
+          arg: 'request',
+          type: 'account',
+          http: {
+            source: 'body'
+          }
         }
-	    },
+      ],
       returns: {
-        arg: 'result',
-        description: 'Returns a JWT key when successful',
+        arg: 'token',
+        description: 'Returns a token when successful',
         type: 'string'
       }
     }
   );
 
-	Account.remoteMethod(
+  Account.remoteMethod(
     'login', {
       http: {
         path: '/',
         verb: 'post'
       },
-      accepts: {
-        arg: 'request',
-        type: 'login',
-        http: {
-          source: 'body'
+      accepts: [
+        {
+          arg: 'request',
+          type: 'login',
+          http: {
+            source: 'body'
+          }
         }
-	    },
+      ],
       returns: {
-        arg: 'result',
-        description: 'Returns a JWT key when successful',
+        arg: 'token',
+        description: 'Returns a token when successful',
         type: 'string'
       }
     }

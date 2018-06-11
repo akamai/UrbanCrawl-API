@@ -40,9 +40,6 @@
       "required": true
     }
   },
-  "http": {
-    "path" : "/v2/cart"
-  },
   "validations": [],
   "relations": {},
   "acls": [

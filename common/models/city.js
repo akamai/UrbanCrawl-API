@@ -141,7 +141,8 @@ City.remoteMethod(
     returns: {
       arg: 'places',
       description: 'Returns a JSON object containing details and places of a city whose ID is supplied',
-      type: 'array'
+      type: ['place'],
+      root: true
     }
   }
 );
@@ -185,20 +186,24 @@ City.search = function(version, keyword, cb) {
   City.remoteMethod(
     'search', {
       http: {
-        path: '/search/:q',
+        path: '/search',
         verb: 'get'
       },
       accepts: [
         {
-        	arg: 'q',
+        	arg: 'query',
         	type: 'string',
-          required: true
+          required: true,
+          http: {
+        	  source: 'query'
+        	}
         }
       ],
       returns: {
     		arg: 'cities',
     		description: 'Returns a JSON array of all the available cities that match the supplied keyword, mainly to use in City List screen',
-    		type: 'array'
+    		type: ['city'],
+        root: true
       }
     }
   );
@@ -232,7 +237,8 @@ City.remoteMethod(
     returns: {
       arg: 'placeDetails',
       description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied',
-      type: 'Object'
+      type: 'place',
+      root: true
     }
   }
 );
@@ -272,7 +278,8 @@ City.getMediaOfPlace = function(cityId, placeId, type, cb) {
       returns: {
         arg: 'media',
         description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied',
-        type: 'array'
+        type: ['media'],
+        root: true
       }
     }
   );
@@ -306,7 +313,8 @@ City.getMediaOfCity = function(cityId, type, cb) {
       returns: {
         arg: 'media',
         description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied',
-        type: 'array'
+        type: ['media'],
+        root: true
       }
     }
   );

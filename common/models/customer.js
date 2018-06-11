@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018. Akamai Technologies, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 'use strict';
 
 var app = require('../../server/server');
@@ -8,14 +24,14 @@ module.exports = function(Customer) {
 // {
 // "email" : "foo1@bar1.com",
 // "password" : "foobar1",
-// "name" : "Foo Bar" 
+// "name" : "Foo Bar"
 // }
 
 	Customer.register = function(version, body, cb){
 
 		switch(version.apiVersion){
 			case 'v2':
-				if(body === undefined || 
+				if(body === undefined ||
 					body.email === undefined ||
 					body.password === undefined ||
 					body.name === undefined){
@@ -57,7 +73,7 @@ module.exports = function(Customer) {
 							bcrypt.hash(plainPassword, saltRounds, function(err, hash){
 								if(!err){
 									const uuidv1 = require('uuid/v1');
-									
+
 									var userId = uuidv1();
 									var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 									Customer.create(
@@ -102,7 +118,7 @@ module.exports = function(Customer) {
 					}
 				});
 			}
-			  
+
 			break;
 			default:
 			  var error = new Error("You must supply a valid api version");
@@ -120,7 +136,7 @@ module.exports = function(Customer) {
 
 		switch(version.apiVersion){
 			case 'v2':
-			  	if(body === undefined || 
+			  	if(body === undefined ||
 				body.email === undefined ||
 				body.password === undefined){
 					var error = new Error("Insufficient parameters supplied.");
@@ -160,7 +176,7 @@ module.exports = function(Customer) {
 												var sha256 = crypto.createHash("sha256");
 												sha256.update(findResults[0].userid);
 												var sha256Token = sha256.digest("base64");
-												
+
 												cb(null, {status: "ok", token: sha256Token});
 
 									    } else if (valid == false) {
@@ -188,9 +204,9 @@ module.exports = function(Customer) {
 	}
 
 	var sendTokenToGateway = function(sha256Token){
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
-      		process.env.AKAMAI_CLIENT_SECRET, 
-      		process.env.AKAMAI_ACCESS_TOKEN, 
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      		process.env.AKAMAI_CLIENT_SECRET,
+      		process.env.AKAMAI_ACCESS_TOKEN,
       		process.env.AKAMAI_HOST);
 
       	eg.auth({
@@ -220,9 +236,9 @@ module.exports = function(Customer) {
 
 	var createNewCollectionAndSendToken = function(sha256Token){
 		var EdgeGrid = require('edgegrid');
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
-      		process.env.AKAMAI_CLIENT_SECRET, 
-      		process.env.AKAMAI_ACCESS_TOKEN, 
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      		process.env.AKAMAI_CLIENT_SECRET,
+      		process.env.AKAMAI_ACCESS_TOKEN,
       		process.env.AKAMAI_HOST);
 
       	eg.auth({
@@ -252,9 +268,9 @@ module.exports = function(Customer) {
 
 	var sendToken = function(collectionId, sha256Token){
 		var EdgeGrid = require('edgegrid');
-      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN, 
-      		process.env.AKAMAI_CLIENT_SECRET, 
-      		process.env.AKAMAI_ACCESS_TOKEN, 
+      	var eg = new EdgeGrid(process.env.AKAMAI_CLIENT_TOKEN,
+      		process.env.AKAMAI_CLIENT_SECRET,
+      		process.env.AKAMAI_ACCESS_TOKEN,
       		process.env.AKAMAI_HOST);
 
       	eg.auth({
@@ -291,16 +307,16 @@ module.exports = function(Customer) {
       },
       accepts: [
 		{
-			arg: 'version', 
-			type: 'object', 
+			arg: 'version',
+			type: 'object',
 			description: 'API version eg. v1, v2, etc.',
 			http: function (context) {
 				return {apiVersion: context.req.apiVersion};
 			}
 		},
 		{
-			arg: 'items', 
-			type: 'object', 
+			arg: 'items',
+			type: 'object',
 			http: {
 				source: 'body'
 			}
@@ -322,16 +338,16 @@ module.exports = function(Customer) {
       },
       accepts: [
 		{
-			arg: 'version', 
-			type: 'object', 
+			arg: 'version',
+			type: 'object',
 			description: 'API version eg. v1, v2, etc.',
 			http: function (context) {
 			   return {apiVersion: context.req.apiVersion};
 			}
 		},
 		{
-			arg: 'items', 
-			type: 'object', 
+			arg: 'items',
+			type: 'object',
 			http: {
 				source: 'body'
 			}
