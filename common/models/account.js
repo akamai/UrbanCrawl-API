@@ -239,7 +239,7 @@ Account.register = function (body, cb) {
       body: {
         "name": "UrbanCrawlUserCollection",
         "contractId": "C-1FRYVV3",
-        "groupId": 111340,
+        "groupId": 64867,
         "description": "Collection for UrbanCrawl Users",
         "quota": {
           "enabled": true,
