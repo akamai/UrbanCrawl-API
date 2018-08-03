@@ -1,5 +1,5 @@
 {
-  "restApiRoot": "/v2",
+  "restApiRoot": "/",
   "host": "0.0.0.0",
   "port": "${PORT}",
   "remoting": {

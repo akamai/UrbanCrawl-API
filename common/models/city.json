@@ -5,6 +5,9 @@
   "options": {
     "validateUpsert": true
   },
+  "http": {
+    "path": ":apiVersion/cities"
+  },
   "properties": {
     "name": {
       "type": "string",
