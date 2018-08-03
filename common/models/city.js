@@ -16,83 +16,109 @@
 
 'use strict';
 
-module.exports = function(City) {
+module.exports = function (City) {
 
-City.disableRemoteMethodByName('__count__places');
-City.disableRemoteMethodByName('__create__places');
-City.disableRemoteMethodByName('__delete__places');
-City.disableRemoteMethodByName('__destroyById__places');
-City.disableRemoteMethodByName('__updateById__places');
-City.disableRemoteMethodByName('__findById__places');
-City.disableRemoteMethodByName('__get__places');
+  City.disableRemoteMethodByName('__count__places');
+  City.disableRemoteMethodByName('__create__places');
+  City.disableRemoteMethodByName('__delete__places');
+  City.disableRemoteMethodByName('__destroyById__places');
+  City.disableRemoteMethodByName('__updateById__places');
+  City.disableRemoteMethodByName('__findById__places');
+  City.disableRemoteMethodByName('__get__places');
 
-var server = require('../../server/server');
+  var app = require('../../server/server');
 
-//--------- Get All Cities ------------
-City.getAllCities = function(cb) {
-  City.find(
-    {fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true} },
-    function(err, result){
-      if(!err){
-        cb(null, result);
-      }else{
-        var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-        error.status = 500;
+  //--------- Get All Cities ------------
+  City.getAllCities = function (version, cb) {
+    switch (version.apiVersion) {
+      case 'v2':
+        City.find(
+          { fields: { id: true, name: true, countryname: true, lat: true, lng: true, thumburl: true, heroimage: true, description: true, tour_time: true, tour_price: true } },
+          function (err, result) {
+            if (!err) {
+              cb(null, result);
+            } else {
+              var error = new Error("Something went wrong and we couldn't fulfill this request. Write to us if this persists");
+              error.status = 500;
+              cb(error, null);
+            }
+          }
+        );
+        break;
+      default:
+        var error = new Error("You must supply a valid api version");
+        error.status = 404;
         cb(error, null);
-      }
     }
-  );
-};
+  };
 
-City.remoteMethod(
+  City.remoteMethod(
     'getAllCities', {
       http: {
-          path: '/',
-          verb: 'get'
+        path: '/',
+        verb: 'get'
       },
+      accepts: [
+        {
+          arg: 'version',
+          type: 'object',
+          description: 'API version eg. v1, v2, etc.',
+          http: function (context) {
+            return { apiVersion: context.req.apiVersion };
+          }
+        }
+      ],
       returns: {
         arg: 'cities',
         description: 'Returns a JSON array of all the available cities, mainly to use in City List screen',
         type: [City],
         root: true
       }
-  }
-);
+    }
+  );
 
 
-//---------- Get City Details ------------------
-City.getCityDetails = function(idToFind, cb) {
-
+  //---------- Get City Details ------------------
+  City.getCityDetails = function (version, idToFind, cb) {
+    switch (version.apiVersion) {
+      case 'v2':
         var placesOfCity;
 
-        if(idToFind === undefined){
+        if (idToFind === undefined) {
           var error = new Error("No id was supplied. You must supply a cidy id");
           error.status = 404;
           cb(error, null);
-        }else{
+        } else {
 
           City.find({
-            where: {id: idToFind},
-            fields: {createdate: false, lastupdated: false},
-            include: {relation: 'places', scope: {fields: ["id", "name", "heroimage", "herovideo", "description", "numimages", "timings"]}}
-          }, function(err, result){
+            where: { id: idToFind },
+            fields: { createdate: false, lastupdated: false },
+            include: { relation: 'places', scope: { fields: ["id", "name", "heroimage", "herovideo", "description", "numimages", "timings"] } }
+          }, function (err, result) {
 
-          if(!err){
-            if(result.length > 0){
-              cb(null, result[0]);
-            }else{
-              var error = new Error("Didn't find anything with this id");
+            if (!err) {
+              if (result.length > 0) {
+                cb(null, result[0]);
+              } else {
+                var error = new Error("Didn't find anything with this id");
                 error.status = 404;
                 cb(error, null);
-            }
-          }else{
-            var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+              }
+            } else {
+              var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
               error.status = 500;
               cb(error, null);
-          }
+            }
           });
         }
-};
+        break;
+      default:
+        var error = new Error("You must supply a valid api version");
+        error.status = 404;
+        cb(error, null);
+
+    }
+  };
 
   City.remoteMethod(
     'getCityDetails', {
@@ -102,8 +128,16 @@ City.getCityDetails = function(idToFind, cb) {
       },
       accepts: [
         {
-        	arg: 'cityId',
-        	type: 'number',
+          arg: 'version',
+          type: 'object',
+          description: 'API version eg. v1, v2, etc.',
+          http: function (context) {
+            return { apiVersion: context.req.apiVersion };
+          }
+        },
+        {
+          arg: 'cityId',
+          type: 'number',
           required: true
         }
       ],
@@ -117,69 +151,106 @@ City.getCityDetails = function(idToFind, cb) {
   );
 
 
-//------------- Get Places of a city -------------
+  //------------- Get Places of a city -------------
 
-City.getPlacesOfCity = function(cityId, cb) {
+  City.getPlacesOfCity = function (version, cityId, cb) {
 
-      var Place = app.models.Place;
-      Place.getAllPlacesOfCity(cityId, cb);
-};
+    switch (version.apiVersion) {
+      case 'v2':
+        var Place = app.models.Place;
+        Place.getAllPlacesOfCity(cityId, cb);
+        break;
+      default:
+        var error = new Error("You must supply a valid api version");
+        error.status = 404;
+        cb(error, null);
 
-City.remoteMethod(
-  'getPlacesOfCity', {
-    http: {
-      path: '/:cityId/places',
-      verb: 'get'
-    },
-    accepts: [
-      {
-        arg: 'cityId',
-        type: 'number',
-        required: true
-      }
-    ],
-    returns: {
-      arg: 'places',
-      description: 'Returns a JSON object containing details and places of a city whose ID is supplied',
-      type: ['place'],
-      root: true
     }
-  }
-);
+  };
 
-
-//------------- Search Cities -------------
-
-City.search = function(version, keyword, cb) {
-
-    var placesOfCity;
-
-    if(keyword === undefined){
-      var error = new Error("No keyword was supplied. You must supply a search keyword");
-      error.status = 404;
-      cb(error, null);
-    }else{
-
-      City.find({
-        where: {name: {like: "%"+keyword+"%"}},
-        fields: {id:true, name: true, countryname: true, lat: true, lng: true, thumburl: true, description: true, tour_price: true}
+  City.remoteMethod(
+    'getPlacesOfCity', {
+      http: {
+        path: '/:cityId/places',
+        verb: 'get'
       },
-      function(err, result){
-
-      if(!err){
-        if(result.length > 0){
-          cb(null, result);
-        }else{
-          var error = new Error("Didn't find anything with this keyword");
-            error.status = 404;
-            cb(error, null);
+      accepts: [
+        {
+          arg: 'version',
+          type: 'object',
+          description: 'API version eg. v1, v2, etc.',
+          http: function (context) {
+            return { apiVersion: context.req.apiVersion };
+          }
+        },
+        {
+          arg: 'cityId',
+          type: 'number',
+          required: true
         }
-      }else{
-        var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-          error.status = 500;
-          cb(error, null);
+      ],
+      returns: {
+        arg: 'places',
+        description: 'Returns a JSON object containing details and places of a city whose ID is supplied',
+        type: ['place'],
+        root: true
       }
-      });
+    }
+  );
+
+
+  //------------- Search Cities -------------
+
+  City.search = function (version, keyword, cb) {
+    switch (version.apiVersion) {
+      case 'v2':
+        var placesOfCity;
+
+        if (keyword === undefined) {
+          var error = new Error("No keyword was supplied. You must supply a search keyword");
+          error.status = 404;
+          cb(error, null);
+        } else {
+
+          City.find({
+            where: {
+              or: [
+                { name: { like: "%" + keyword + "%" } },
+                { countryname: { like: "%" + keyword + "%" } },
+                { description: { like: "%" + keyword + "%" } },
+                { tour_time: { like: "%" + keyword + "%" } },
+                { language: { like: "%" + keyword + "%" } },
+                { traveladvice: { like: "%" + keyword + "%" } },
+                { currency: { like: "%" + keyword + "%" } },
+                { tour_price: { like: "%" + keyword + "%" } }
+              ]
+            },
+            fields: { id: true, name: true, countryname: true, lat: true, lng: true, thumburl: true, heroimage: true, description: true, tour_price: true, tour_time: true }
+          },
+            function (err, result) {
+
+              if (!err) {
+                if (result.length > 0) {
+                  cb(null, result);
+                } else {
+                  var error = new Error("Didn't find anything with this keyword");
+                  error.status = 404;
+                  cb(error, null);
+                }
+              } else {
+                var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+                error.status = 500;
+                cb(error, null);
+              }
+            });
+        }
+        break;
+      default:
+        var error = new Error("You must supply a valid api version");
+        error.status = 404;
+        error.error_code = "INVALID_API_VERSION";
+        cb(error, null);
+
     }
   };
 
@@ -191,65 +262,97 @@ City.search = function(version, keyword, cb) {
       },
       accepts: [
         {
-        	arg: 'query',
-        	type: 'string',
+          arg: 'version',
+          type: 'object',
+          description: 'API version eg. v1, v2, etc.',
+          http: function (context) {
+            return { apiVersion: context.req.apiVersion };
+          }
+        },
+        {
+          arg: 'query',
+          type: 'string',
           required: true,
           http: {
-        	  source: 'query'
-        	}
+            source: 'query'
+          }
         }
       ],
       returns: {
-    		arg: 'cities',
-    		description: 'Returns a JSON array of all the available cities that match the supplied keyword, mainly to use in City List screen',
-    		type: ['city'],
+        arg: 'cities',
+        description: 'Returns a JSON array of all the available cities that match the supplied keyword, mainly to use in City List screen',
+        type: ['city'],
         root: true
       }
     }
   );
 
 
-//------------- Get Place Details -------------
+  //------------- Get Place Details -------------
 
-City.getPlaceDetails = function(cityId, placeId, cb) {
-      var Place = app.models.Place;
-      Place.getPlaceDetails(cityId, placeId, cb);
-};
-
-City.remoteMethod(
-  'getPlaceDetails', {
-    http: {
-      path: '/:cityId/places/:placeId',
-      verb: 'get'
-    },
-    accepts: [
-      {
-        arg: 'cityId',
-        type: 'number',
-        required: true
-      },
-      {
-        arg: 'placeId',
-        type: 'number',
-        required: true
-      }
-    ],
-    returns: {
-      arg: 'placeDetails',
-      description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied',
-      type: 'place',
-      root: true
+  City.getPlaceDetails = function (version, cityId, placeId, cb) {
+    switch (version.apiVersion) {
+      case 'v2':
+        var Place = app.models.Place;
+        Place.getPlaceDetails(cityId, placeId, cb);
+        break;
+      default:
+        var error = new Error("You must supply a valid api version");
+        error.status = 404;
+        cb(error, null);
     }
-  }
-);
+  };
+
+  City.remoteMethod(
+    'getPlaceDetails', {
+      http: {
+        path: '/:cityId/places/:placeId',
+        verb: 'get'
+      },
+      accepts: [
+        {
+          arg: 'version',
+          type: 'object',
+          description: 'API version eg. v1, v2, etc.',
+          http: function (context) {
+            return { apiVersion: context.req.apiVersion };
+          }
+        },
+        {
+          arg: 'cityId',
+          type: 'number',
+          required: true
+        },
+        {
+          arg: 'placeId',
+          type: 'number',
+          required: true
+        }
+      ],
+      returns: {
+        arg: 'placeDetails',
+        description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied',
+        type: 'place',
+        root: true
+      }
+    }
+  );
 
 
-//------------- Get All Media of Place according to type supplied -------------
+  //------------- Get All Media of Place according to type supplied -------------
 
-City.getMediaOfPlace = function(cityId, placeId, type, cb) {
-
+  City.getMediaOfPlace = function (version, cityId, placeId, type, cb) {
+    switch (version.apiVersion) {
+      case 'v2':
         var Media = app.models.Media;
         Media.getAllMediaByPlaceId(cityId, placeId, type, cb);
+        break;
+      default:
+        var error = new Error("You must supply a valid api version");
+        error.status = 404;
+        cb(error, null);
+
+    }
   };
 
   City.remoteMethod(
@@ -259,6 +362,14 @@ City.getMediaOfPlace = function(cityId, placeId, type, cb) {
         verb: 'get'
       },
       accepts: [
+        {
+          arg: 'version',
+          type: 'object',
+          description: 'API version eg. v1, v2, etc.',
+          http: function (context) {
+            return { apiVersion: context.req.apiVersion };
+          }
+        },
         {
           arg: 'cityId',
           type: 'number',
@@ -285,11 +396,19 @@ City.getMediaOfPlace = function(cityId, placeId, type, cb) {
   );
 
 
-//------------- Get All Media of a City according to type supplied -------------
+  //------------- Get All Media of a City according to type supplied -------------
 
-City.getMediaOfCity = function(cityId, type, cb) {
+  City.getMediaOfCity = function(version, cityId, type, cb) {
+    switch (version.apiVersion) {
+      case 'v2':
         var Media = app.models.Media;
         Media.getAllMediaByCityId(cityId, type, cb);
+        break;
+      default:
+        var error = new Error("You must supply a valid api version");
+        error.status = 404;
+        cb(error, null);
+    }
   };
 
   City.remoteMethod(
@@ -299,6 +418,14 @@ City.getMediaOfCity = function(cityId, type, cb) {
         verb: 'get'
       },
       accepts: [
+        {
+          arg: 'version',
+          type: 'object',
+          description: 'API version eg. v1, v2, etc.',
+          http: function(context) {
+            return { apiVersion: context.req.apiVersion };
+          }
+        },
         {
           arg: 'cityId',
           type: 'number',
