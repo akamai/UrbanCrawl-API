@@ -6,6 +6,9 @@
   "options": {
     "validateUpsert": true
   },
+  "http": {
+    "path": ":apiVersion/orders"
+  },
   "properties": {
     "cityid": {
       "type": "number",

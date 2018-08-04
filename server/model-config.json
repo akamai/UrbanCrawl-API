@@ -110,6 +110,7 @@
         "sharedMethods": {
           "*": false,
           "checkout": false,
+          "getAllOrders": true,
           "getOrders": false
         }
       }
