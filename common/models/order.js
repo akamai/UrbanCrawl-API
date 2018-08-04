@@ -71,10 +71,10 @@ module.exports = function (Order) {
 		}
 	};
 
-	var _actionCode = Object.freeze({ GET_ORDERS: 1 });
+	var _actionCode = Object.freeze({ GET_ORDERS: 1, DELETE_ORDER: 2 });
 
 	//Function to verify the token passed to it
-	var verifyToken = function (token, actionCode, cb) {
+	var verifyToken = function(token, actionCode, body, cb) {
 		var Token = app.models.Token;
 		Token.find({ where: { token: token } }, function (err, tokenFindResult) {
 
@@ -91,9 +91,12 @@ module.exports = function (Order) {
 					//Token is still valid
 					switch (actionCode) {
 						case _actionCode.GET_ORDERS:
+							returnOrdersByUserId(userId, undefined, cb);
+							break;
+						case _actionCode.DELETE_ORDER:
 							// addItemToCart(body, userId, cb);
 							// returnOrders(userId, cb);
-							returnOrdersByUserId(userId, undefined, cb);
+							deleteOrder(userId, body.id, cb);
 							break;
 						default:
 							var error = new Error("Operation Not Defined");
@@ -134,9 +137,21 @@ module.exports = function (Order) {
 			} else {
 				var error = new Error("Something went wrong and we couldn't get the items of the order. Write to us if this persists");
 				error.status = 500;
-				error.error_code = "SERVER_ERROR";
 				cb(error, null);
 			}
+		});
+	}
+
+	var deleteOrder = function(userId, orderId, cb){
+		Order.destroyAll({userid: userId, orderid: orderId},
+			function(err, result){
+				if(!err){
+					returnOrdersByUserId(userId, undefined, cb);
+				}else{
+					var error = new Error("Something went wrong and we couldn't delete the order. Write to us if this persists");
+					error.status = 500;
+					cb(error, null);
+				}
 		});
 	}
 
@@ -153,7 +168,7 @@ module.exports = function (Order) {
 					return;
 				} else {
 					// try to verify token
-					verifyToken(sentToken, _actionCode.GET_ORDERS, cb);
+					verifyToken(sentToken, _actionCode.GET_ORDERS, null, cb);
 				}
 
 				break;
@@ -190,6 +205,68 @@ module.exports = function (Order) {
 			returns: {
 				arg: 'items',
 				description: 'Returns an HTTP 200, and the items in cart for this user, if everything goes well',
+				type: [Order],
+				root: true
+			}
+		}
+	);
+
+
+	//DELETE Order by ID
+	Order.deleteOrderByID = function(version, req, orderId, cb) {
+		switch (version.apiVersion) {
+			case 'v2':
+
+				var sentToken = req.headers.authorization;
+				if (sentToken === undefined) {
+					var error = new Error("Authorization Required");
+					error.status = 400;
+					cb(error, null);
+					return;
+				} else {
+					// try to verify token
+					var body = {id: orderId};
+					verifyToken(sentToken, _actionCode.DELETE_ORDER, body, cb);
+				}
+
+				break;
+			default:
+				var error = new Error("You must supply a valid api version");
+				error.status = 404;
+				cb(error, null);
+		}
+	}
+
+	Order.remoteMethod(
+		'deleteOrderByID', {
+			http: {
+				path: '/:orderId',
+				verb: 'delete'
+			},
+			accepts: [
+				{
+					arg: 'version',
+					type: 'object',
+					description: 'API version eg. v1, v2, etc.',
+					http: function (context) {
+						return { apiVersion: context.req.apiVersion };
+					}
+				},
+				{
+					arg: 'request',
+					type: 'object',
+					http: {
+						source: 'req'
+					}
+				},
+				{
+					arg: 'orderId',
+					type: 'any'
+			  	}
+			],
+			returns: {
+				arg: 'items',
+				description: 'Returns an HTTP 200 if the deletion of an order was successful, and the remaining orders for this user',
 				type: [Order],
 				root: true
 			}
