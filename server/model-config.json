@@ -124,7 +124,9 @@
         "sharedMethods": {
           "*": false,
           "register": true,
-          "login": true
+          "login": true,
+          "updateProfile": true,
+          "getProfile": true
         }
       }
     }

@@ -7,6 +7,9 @@
   "options": {
     "validateUpsert": true
   },
+  "http": {
+    "path": ":apiVersion/account"
+  },
   "properties": {
     "userid": {
       "type": "string",
