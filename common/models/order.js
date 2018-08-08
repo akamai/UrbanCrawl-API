@@ -17,33 +17,22 @@
 'use strict';
 
 var app = require('../../server/server');
-var moment = require("moment");
+var moment = require('moment');
 
-module.exports = function (Order) {
-
+module.exports = function(Order) {
   /**
    * This method is accessed only through the Cart model now
-   * @param {*} body 
-   * @param {*} cb 
+   * @param {*} body
+   * @param {*} cb
    */
-  Order.checkout = function (body, cb) {
-
-    if (body === undefined ||
-      body.userid === undefined) {
-
-      var error = new Error("Supplied parameters are insufficient.");
-      error.status = 400;
-      cb(error, null);
-      return;
-
-    } else {
-      var Cart = app.models.Cart;
-
-      Cart.find({
-        where: {userid: body.userid}
-      },
-        function (err, cartItems) {
-          if (!err) {
+  Order.checkout = function(userId, cb) {
+    var Cart = app.models.Cart;
+    Cart.find({where: {userid: userId},
+    },
+      function(err, cartItems) {
+        if (!err) {
+          if (cartItems.length > 0) {
+            // Proceed only if there were items in cart from the supplied userid
             var orderid = Date.now();
             for (var item of cartItems) {
               var createdate = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
@@ -51,24 +40,49 @@ module.exports = function (Order) {
                 orderid: orderid, cityid: item.cityid, userid: item.userid,
                 thumburl: item.thumburl, unitprice: item.unitprice,
                 quantity: item.quantity, totalprice: item.totalprice,
-                createdate: createdate, updatedate: createdate
+                createdate: createdate, updatedate: createdate,
               },
-                function (err, createResult) {
-                  console.log("ORDER: CREATE RESULT: ", createResult);
+                function(err, createResult) {
+                  if (!err) {
+                    console.log('ORDER: Create Order Result: ', createResult);
+                    console.log('ORDER : Order Id: ', orderid);
+                    // Order made, delete these items from cart
+                    Cart.destroyAll({userid: userId},
+                      function(err, result) {
+                        if (!err) {
+                          console.log('ORDER : Cart Delete: ', result);
+                          returnOrdersByUserId(userId, orderid, cb);
+                        } else {
+                          console.log('ORDER : Error in deleting cart: ', err);
+                          var error = new Error("Something went wrong and we couldn't clear your cart. Your order, however, has went through, check your account. Write to us if this persists");
+                          error.status = 500;
+                          cb(error, null);
+                        }
+                      });
+                  } else {
+                    console.log('ORDER : Error in creating order: ', err);
+                    var error = new Error("Something went wrong and we couldn't create your order. Your order, however, has went through, check your account. Write to us if this persists");
+                    error.status = 500;
+                    cb(error, null);
+                  }
                 });
             }
-            //Order made, delete these items from cart
-            Cart.destroyAll({
-              where: { userid: body.userid }
-            },
-              function (err, result) {
-                console.log("CART DELETE: ", result);
-              });
-            console.log("timestamp ", orderid);
-            cb(null, cartItems);
+          } else {
+            console.log('ORDER : No orders for the given userid ', userId);
+            var error = new Error('No cart items were found for the given user');
+            error.status = 400;
+            error.cause = 'No cart items were found for the given user';
+            cb(error, null);
           }
-        });
-    }
+        } else {
+          console.log(
+            'Order : Checkout : Error at finding cart items for a userid:',
+            err);
+          var error = new Error("Something went wrong and we couldn't get the items to checkout. Write to us if this persists");
+          error.status = 500;
+          cb(error, null);
+        }
+      });
   };
 
   var _actionCode = Object.freeze({GET_ORDERS: 1, DELETE_ORDER: 2});
@@ -94,37 +108,35 @@ module.exports = function (Order) {
                 returnOrdersByUserId(userId, undefined, cb);
                 break;
               case _actionCode.DELETE_ORDER:
-                // addItemToCart(body, userId, cb);
-                // returnOrders(userId, cb);
                 deleteOrder(userId, body.id, cb);
                 break;
               default:
-                var error = new Error("Operation Not Defined");
+                var error = new Error('Operation Not Defined');
                 error.status = 500;
                 cb(error, null);
             }
           } else {
             // Token has expired
-            var error = new Error("Token Expired");
+            var error = new Error('Token Expired');
             error.status = 401;
             cb(error, null);
           }
           return;
-        }else{
+        } else{
           // The token wasn't found, return that token was invalid
           var error = new Error('Token Expired');
           error.status = 401;
           cb(error, null);
         }
-      }else{
-        console.log("Error in finding provided Token: ",err);
-        var error = new Error("Incorrect Authentication");
+      }else {
+        console.log('Error in finding provided Token: ', err);
+        var error = new Error('Incorrect Authentication');
         error.status = 401;
         cb(error, null);
         return;
       }
     });
-  }
+  };
 
   var returnOrdersByUserId = function(userId, orderId, cb) {
     if (orderId === undefined) {
@@ -137,29 +149,28 @@ module.exports = function (Order) {
       where: whereClause,
       fields: {orderid: true, cityid: true, thumburl: true, quantity: true, totalprice: true, createdate: true}},
       function(err, orders) {
-      if (!err) {
+        if (!err) {
         cb(null, orders);
       } else {
         var error = new Error("Something went wrong and we couldn't get the items of the order. Write to us if this persists");
         error.status = 500;
         cb(error, null);
       }
-    });
-  }
+      });
+  };
 
-  var deleteOrder = function(userId, orderId, cb){
+  var deleteOrder = function(userId, orderId, cb) {
     Order.destroyAll({userid: userId, orderid: orderId},
-      function(err, result){
-        if(!err){
+      function(err, result) {
+        if (!err) {
           returnOrdersByUserId(userId, undefined, cb);
-        }else{
+        } else{
           var error = new Error("Something went wrong and we couldn't delete the order. Write to us if this persists");
           error.status = 500;
           cb(error, null);
         }
-    });
-  }
-
+      });
+  };
 
   Order.getAllOrders = function(version, req, cb) {
     switch (version.apiVersion) {
@@ -167,7 +178,7 @@ module.exports = function (Order) {
 
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error("Authorization Required");
+          var error = new Error('Authorization Required');
           error.status = 400;
           cb(error, null);
           return;
@@ -178,53 +189,52 @@ module.exports = function (Order) {
 
         break;
       default:
-        var error = new Error("You must supply a valid api version");
+        var error = new Error('You must supply a valid api version');
         error.status = 404;
         cb(error, null);
     }
-  }
+  };
 
   Order.remoteMethod(
     'getAllOrders', {
       http: {
         path: '/',
-        verb: 'get'
+        verb: 'get',
       },
       accepts: [
         {
           arg: 'version',
           type: 'object',
           description: 'API version eg. v1, v2, etc.',
-          http: function (context) {
-            return { apiVersion: context.req.apiVersion };
-          }
+          http: function(context) {
+            return {apiVersion: context.req.apiVersion};
+          },
         },
         {
           arg: 'request',
           type: 'object',
           http: {
-            source: 'req'
-          }
-        }
+            source: 'req',
+          },
+        },
       ],
       returns: {
         arg: 'items',
         description: 'Returns an HTTP 200, and the items in cart for this user, if everything goes well',
         type: [Order],
-        root: true
-      }
+        root: true,
+      },
     }
   );
 
-
-  //DELETE Order by ID
+  // DELETE Order by ID
   Order.deleteOrderByID = function(version, req, orderId, cb) {
     switch (version.apiVersion) {
       case 'v2':
 
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error("Authorization Required");
+          var error = new Error('Authorization Required');
           error.status = 400;
           cb(error, null);
           return;
@@ -236,48 +246,45 @@ module.exports = function (Order) {
 
         break;
       default:
-        var error = new Error("You must supply a valid api version");
+        var error = new Error('You must supply a valid api version');
         error.status = 404;
         cb(error, null);
     }
-  }
+  };
 
   Order.remoteMethod(
     'deleteOrderByID', {
       http: {
         path: '/:orderId',
-        verb: 'delete'
+        verb: 'delete',
       },
       accepts: [
         {
           arg: 'version',
           type: 'object',
           description: 'API version eg. v1, v2, etc.',
-          http: function (context) {
-            return { apiVersion: context.req.apiVersion };
-          }
+          http: function(context) {
+            return {apiVersion: context.req.apiVersion};
+          },
         },
         {
           arg: 'request',
           type: 'object',
           http: {
-            source: 'req'
-          }
+            source: 'req',
+          },
         },
         {
           arg: 'orderId',
-          type: 'any'
-          }
+          type: 'any',
+        },
       ],
       returns: {
         arg: 'items',
         description: 'Returns an HTTP 200 if the deletion of an order was successful, and the remaining orders for this user',
         type: [Order],
-        root: true
-      }
+        root: true,
+      },
     }
   );
-
-  
-
 };
