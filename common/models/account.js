@@ -28,7 +28,7 @@ module.exports = function(Account) {
   // {
   // 'email' : 'foo1@bar1.com',
   // 'password' : 'foobar1',
-  // 'name' : 'Foo Bar'
+  // 'full_name' : 'Foo Bar'
   // }
 
   var ttl = 604800;
@@ -591,7 +591,7 @@ module.exports = function(Account) {
             status: 'ok',
             updated_profile: {
               email: body.email,
-              name: body.full_name
+              full_name: body.full_name
             }
           };
           cb(null, result);
@@ -616,7 +616,7 @@ module.exports = function(Account) {
           var result = {
             userid: findResults.userid,
             email: findResults.email,
-            name: findResults.full_name
+            full_name: findResults.full_name
           };
 
           cb(null, result);
