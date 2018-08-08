@@ -6,6 +6,9 @@
   "options": {
     "validateUpsert": true
   },
+  "http": {
+    "path": ":apiVersion/cart"
+  },
   "properties": {
     "cityid": {
       "type": "number",
@@ -31,7 +34,7 @@
       "type": "number",
       "required": true
     },
-    "createdate": {
+    "createddate": {
       "type": "date",
       "required": true
     },

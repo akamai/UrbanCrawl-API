@@ -19,321 +19,364 @@
 var app = require('../../server/server');
 
 var unitprice;
-var moment = require("moment");
+var moment = require('moment');
 
-//--------------------- ADD TO CART ------------
 module.exports = function(Cart) {
+  var returnCart = function(userid, cb) {
+    Cart.find({where: {userid: userid},
+      fields: {cityid: true, quantity: true, totalprice: true, thumburl: true}},
+      function(err, result) {
+        if (!err) {
+          cb(null, result);
+        } else {
+          var error = new Error("Something went wrong and we couldn't return the cart items. Write to us if this persists");
+          error.status = 500;
+          error.error_code = 'SERVER_ERROR';
+          cb(error, null);
+        }
+      });
+  };
 
-	//Add new items
-	// {
-	// "cityid": 44,
-	// "userid" : "user-id",
-	// "qty":2
-	// }
-	Cart.addToCart = function(body, cb){
+  var _actionCode = Object.freeze({ADD_TO_CART: 1, GET_CART: 2, CHECKOUT: 3});
 
+  // Function to verify the token passed to it
+  var verifyTokenAndProceed = function(token, body, actionCode, cb) {
+    var Token = app.models.Token;
+    console.log('Account : Get Account : Sent Token : ', token);
+    Token.find({where: {token: token}}, function(err, tokenFindResult) {
+      if (!err) {
+        console.log('Account : Get Account : Token Find Result: ', tokenFindResult);
 
-	      	if(body === undefined ||
-				body.cityid === undefined ||
-				body.userid === undefined ||
-				body.qty === undefined){
+        if (tokenFindResult.length > 0) {
+          tokenFindResult = tokenFindResult[0];
+          var tokenIssuedDate = moment(tokenFindResult.createddate);
+          var dateNow = moment();
+          var diffInSecs = dateNow.diff(tokenIssuedDate) / 1000;
 
-				var error = new Error("Supplied parameters are insufficient.");
-		  		error.status = 400;
-		  		cb(error, null);
-		  		return;
-			}
-			var City = app.models.City;
+          var userId = tokenFindResult.userid;
 
-			City.find({
-				where: {id: body.cityid},
-				fields: {id:true, thumburl: true, tour_price: true}
-			},
-			function(err, cityResult){
-				if(!err){
-					unitprice = cityResult[0].tour_price;
-					Cart.find({
-						where: {cityid: body.cityid, userid: body.userid}
-					}, function(err, cartResult){
-						// The item exists, update it's details
-						if(!err){
-							console.log("CART: Existing Items Length: ", cartResult.length);
-							if(cartResult.length > 0){
-								//There are items which should be updated
-								console.log("CART: UPDATING EXISTING ITEM");
-								var newQuantity = cartResult[0].quantity+body.qty;
-								var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-								Cart.updateAll(
-									{cityid: body.cityid, userid: body.userid},
-									{quantity: newQuantity, totalprice: (cityResult[0].tour_price*newQuantity),
-										updatedate: dateNow},
-									function(err, updateInfo){
-										console.log("CART: UPDATE RESULT ", updateInfo);
-										Cart.find({
-											where: {cityid: body.cityid, userid: body.userid},
-											fields: {createdate:false, updatedate: false}
-										},
-										function(err, cartUpdateResult){
-											if(!err){
-												cb(null, cartUpdateResult);
-											}else{
-												var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-										  		error.status = 500;
-										  		cb(error, null);
-											}
-										});
-								});
-							}else{
+          if (diffInSecs <= tokenFindResult.ttl) {
+            // Token is still valid
+            switch (actionCode) {
+              case _actionCode.ADD_TO_CART:
+                addItemToCart(body, userId, cb);
+                break;
+              case _actionCode.GET_CART:
+                returnCart(userId, cb);
+                break;
+              case _actionCode.CHECKOUT:
+                var Order = app.models.Order;
+                Order.checkout(userId, cb);
+                break;
+              default:
+                var error = new Error('Operation Not Defined');
+                error.status = 500;
+                cb(error, null);
+            }
+          } else {
+          // The token wasn't found, return that token was invalid
+            var error = new Error('Token Expired');
+            error.status = 401;
+            cb(error, null);
+          }
+        } else {
+        // Token has expired
+          var error = new Error('Token Expired');
+          error.status = 401;
+          cb(error, null);
+        }
+        return;
+      } else {
+        var error = new Error('Incorrect Authentication');
+        error.status = 401;
+        cb(error, null);
+        return;
+      }
+    });
+  };
 
-								console.log("CART: ADDING NEW ITEM");
-								var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-								Cart.create(
-									{cityid: body.cityid, userid: body.userid, thumburl: cityResult[0].thumburl,
-										unitprice: cityResult[0].tour_price, quantity: body.qty,
-										totalprice: (cityResult[0].tour_price*body.qty), createdate: dateNow,
-										updatedate: dateNow},
-									function(err, createResult){
-										if(!err){
-											//return a total number of items for this user
-											Cart.count({
-												userid:body.userid},
-												function(err, count){
-													if(!err){
-														cb(null, count);
-													}else{
-														var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-												  		error.status = 500;
-												  		cb(error, null);
-													}
-												});
-										}else{
-											var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-									  		error.status = 500;
-									  		cb(error, null);
-										}
-									});
-							}
-						}else{
-							var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-					  		error.status = 500;
-					  		cb(error, null);
-						}
-					});
-				}else{
-					var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-			  		error.status = 500;
-			  		cb(error, null);
-				}
-			});
-	};
+  // --------------------- ADD TO, OR UPDATE CART ------------
+  // {
+  // "cityid": 44,
+  // "qty":2
+  // }
+  Cart.addToCart = function(version, body, req, cb) {
+    console.log('#### AUTH HEADER', version.apiVersion);
+    switch (version.apiVersion) {
+      case 'v2':
+        if (body === undefined ||
+        body.cityid === undefined ||
+        body.qty === undefined) {
+          var error = new Error('Supplied parameters are insufficient.');
+          error.status = 400;
+          cb(error, null);
+          return;
+        }
 
-	Cart.remoteMethod(
-	    'addToCart', {
-	    	http: {
-		        path: '/',
-		        verb: 'post'
-	    	},
-	    	accepts: [
-		    	{
-			      	arg: 'items',
-			      	type: 'any',
-			      	http: {
-			      		source: 'body'
-			      	}
-			    }
-		    ],
-	    	returns: {
-				arg: 'items',
-				description: 'Returns an HTTP 200, and the items in cart for this user, if everything goes well',
-				type: 'any'
-	    	}
-		}
-	);
+        var sentToken = req.headers.authorization;
+        if (sentToken === undefined) {
+          var error = new Error('Authorization Required');
+          error.status = 400;
+          cb(error, null);
+          return;
+        } else {
+          // try to verify token
+          verifyTokenAndProceed(sentToken, body, _actionCode.ADD_TO_CART, cb);
+        }
+        break;
+      default:
+        var error = new Error('You must supply a valid api version');
+        error.status = 404;
+        error.error_code = 'INVALID_API_VERSION';
+        cb(error, null);
+    }
+  };
 
+  Cart.remoteMethod(
+      'addToCart', {
+        http: {
+          path: '/',
+          verb: 'post',
+        },
+        accepts: [
+          {
+            arg: 'version',
+            type: 'object',
+            description: 'API version eg. v1, v2, etc.',
+            http: function(context) {
+              return {apiVersion: context.req.apiVersion};
+            },
+          },
+          {
+            arg: 'items',
+            type: 'any',
+            http: {
+              source: 'body',
+            },
+          },
+          {
+            arg: 'request',
+            type: 'object',
+            http: {
+              source: 'req',
+            },
+          },
+        ],
+        returns: {
+          arg: 'items',
+          description: 'Returns an HTTP 200, and the items in cart for this user, if everything goes well',
+          type: 'any',
+        },
+      }
+  );
 
-//------------- UPDATE THE CART ----------------
-/**
-* this method is not visible now, since the POST addToCart takes care of amendment of the cart items
-**/
+  // Adds the item to cart if the token was valid
+  var addItemToCart = function(body, userid, cb) {
+    // Trying to get price and other details of the city the user selected
+    var City = app.models.City;
 
-	Cart.updateCart = function(body, cb){
+    City.find({
+      where: {id: body.cityid},
+      fields: {id: true, thumburl: true, tour_price: true},
+    },  function(err, cityResult) {
+      // If the sent cityId was found, let's process
+      if (!err) {
+        // Check if the sent city is already in the cart from the same user, to increment it
+        if (cityResult.length > 0) {
+          unitprice = cityResult[0].tour_price;
+          Cart.find({
+            where: {cityid: body.cityid, userid: userid},
+          }, function(err, cartResult) {
+            // The item exists, update it's details
+            if (!err) {
+              if (cartResult.length > 0) {
+                updateCart(body, userid, unitprice, cb);
+              } else {
+                console.log('CART: ADDING NEW ITEM');
+                var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+                Cart.create(
+                  {cityid: body.cityid, userid: userid, thumburl: cityResult[0].thumburl,
+                    unitprice: unitprice, quantity: body.qty,
+                    totalprice: (unitprice * body.qty), createddate: dateNow,
+                    updatedate: dateNow},
+                  function(err, createResult) {
+                    if (!err) {
+                      console.log('CART: Create Result: ', createResult);
+                      // return a total number of items for this user
+                      returnCart(userid, cb);
+                    } else {
+                      var error = new Error("Something went wrong and we couldn't add a new item. Write to us if this persists");
+                      error.status = 500;
+                      error.error_code = 'SERVER_ERROR';
+                      cb(error, null);
+                    }
+                  });
+              }
+            } else {
+              var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+              error.status = 500;
+              error.error_code = 'SERVER_ERROR';
+              cb(error, null);
+            }
+          });
+        } else {
+          var error = new Error('City not found');
+          error.status = 404;
+          cb(error, null);
+        }
+      } else {
+        var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+        error.status = 500;
+        cb(error, null);
+      }
+    });
+  };
 
-	      	var City = app.models.City;
-			if(body.qty > 0){
-				City.find({
-					where: {id: body.cityid},
-					fields: {id:true, thumburl: true, tour_price: true}
-				},
-				function(err, result){
-					if(!err){
-						unitprice = result[0].tour_price;
-						var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-						Cart.updateAll({cityid: body.cityid, userid: body.userid},
-							{quantity: body.qty, totalprice: result[0].tour_price*body.qty,
-								updatedate: dateNow},
-							function(err, info){
-								console.log("#### UPDATE RESULT ", info);
-								Cart.find({
-									where: {cityid: body.cityid, userid: body.userid},
-									fields: {cityid:true, quantity:true, totalprice: true}
-								},
-								function(err, result){
-									if(!err){
-										cb(null, result);
-									}else{
-										var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-								  		error.status = 500;
-								  		cb(error, null);
-									}
-								});
-							});
-					}else{
-						var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-				  		error.status = 500;
-				  		cb(error, null);
-					}
-				});
-			}else{
-				//quantity 0, delete the item
-				Cart.destroyAll({
-					where: {cityid: body.cityid, userid: body.userid}},
-					function(err, result){
-						if(!err){
-							console.log("########## DELETION RESULT: ",result);
-							if(result.count >= 1){
-								//respond with updated cart
-								Cart.find({
-									where: {cityid: body.cityid, userid: body.userid},
-									fields: {cityid:true, quantity:true, totalprice: true}
-								},
-								function(err, result){
-									if(!err){
-										cb(null, result);
-									}else{
-										var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-								  		error.status = 500;
-								  		cb(error, null);
-									}
-								});
-							}else{
-								var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-						  		error.status = 500;
-						  		cb(error, null);
-							}
-						}else{
-							var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-					  		error.status = 500;
-					  		cb(error, null);
-						}
-					});
-			}
-	};
-
-
-	Cart.remoteMethod(
-	    'updateCart', {
-	    	http: {
-		        path: '/updateCart',
-		        status: 200
-	    	},
-	    	accepts: [
-		    	{
-			      	arg: 'items',
-			      	type: 'any',
-			      	http: {
-			      		source: 'body'
-			      	}
-			    }
-		    ],
-	    	returns: {
-				arg: 'item',
-				description: 'Returns an HTTP 200, cityid of the item updated, along with the total amount, if everything goes well',
-				type: 'any'
-	    	}
-		}
-	);
-
-
-
+  var updateCart = function(body, userid, unitprice, cb) {
+    if (body.qty > 0) {
+      var dateNow = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+      Cart.updateAll({cityid: body.cityid, userid: userid},
+        {quantity: body.qty, totalprice: unitprice * body.qty,
+          updatedate: dateNow},
+          function(err, info) {
+            if (!err) {
+              returnCart(userid, cb);
+            } else {
+              var error = new Error("Something went wrong and we couldn't update the cart. Write to us if this persists");
+              error.status = 500;
+              error.error_code = 'SERVER_ERROR';
+              cb(error, null);
+            }
+          });
+    } else {
+      // quantity 0, delete the item
+      Cart.destroyAll({cityid: body.cityid, userid: userid},
+        function(err, result) {
+          if (!err) {
+            if (result.count >= 1) {
+              // respond with updated cart
+              returnCart(userid, cb);
+            } else {
+              var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+              error.status = 500;
+              error.error_code = 'SERVER_ERROR';
+              cb(error, null);
+            }
+          } else {
+            var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+            error.status = 500;
+            error.error_code = 'SERVER_ERROR';
+            cb(error, null);
+          }
+        });
+    }
+  };
 
 // ---------------- Show all cart items ----------
 
-	Cart.getCart = function(userid, cb){
+  Cart.getCart = function(version, req, cb) {
+    switch (version.apiVersion) {
+      case 'v2':
+        var sentToken = req.headers.authorization;
+        if (sentToken === undefined) {
+          var error = new Error('Authorization Required');
+          error.status = 400;
+          cb(error, null);
+          return;
+        } else {
+          // try to verify token
+          verifyTokenAndProceed(sentToken, null, _actionCode.GET_CART, cb);
+        }
+        break;
+      default:
+        var error = new Error('You must supply a valid api version');
+        error.status = 404;
+        cb(error, null);
+    }
+  };
 
-			if(userid === undefined){
-				var error = new Error("No id was supplied. You must supply a user id");
-				error.status = 404;
-				cb(error, null);
-			}else{
-				Cart.find({
-					where: {userid: userid},
-					fields: {cityid:true, quantity:true, totalprice: true}
-				},
-				function(err, result){
-					if(!err){
-						cb(null, result);
-					}else{
-						var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
-				  		error.status = 500;
-				  		cb(error, null);
-					}
-				});
-			}
-	};
-
-
-	Cart.remoteMethod(
-	    'getCart', {
-	    	http: {
-		        path: '/:userId',
-		      	verb: 'get'
-	    	},
-	    	accepts: [
-		    	{
-			      	arg: 'userid',
-			      	type: 'string',
-			      	required: true
-			    }
-		    ],
-	    	returns: {
-				arg: 'item',
-				description: 'Returns an HTTP 200, and all the cart items, if everything goes well',
-				type: 'any'
-	    	}
-		}
-	);
+  Cart.remoteMethod(
+      'getCart', {
+        http: {
+          path: '/',
+          verb: 'get',
+        },
+        accepts: [
+          {
+            arg: 'version',
+            type: 'object',
+            description: 'API version eg. v1, v2, etc.',
+            http: function(context) {
+              return {apiVersion: context.req.apiVersion};
+            },
+          },
+          {
+            arg: 'request',
+            type: 'object',
+            http: {
+              source: 'req',
+            },
+          },
+        ],
+        returns: {
+          arg: 'item',
+          description: 'Returns an HTTP 200, and all the cart items, if everything goes well',
+          type: 'any',
+        },
+      }
+  );
 
 // ---------------- Checkout ----------
 
-	Cart.checkout = function(body, cb){
+  Cart.checkout = function(version, req, cb) {
+    switch (version.apiVersion) {
+      case 'v2':
+        var sentToken = req.headers.authorization;
+        if (sentToken === undefined) {
+          var error = new Error('Authorization Required');
+          error.status = 400;
+          cb(error, null);
+          return;
+        } else {
+          // try to verify token
+          verifyTokenAndProceed(sentToken, null, _actionCode.CHECKOUT, cb);
+        }
+        break;
+      default:
+        var error = new Error('You must supply a valid api version');
+        error.status = 404;
+        cb(error, null);
+    }
+  };
 
-
-	      	var app = require('../../server/server');
-			var Order = app.models.Order;
-	    	Order.checkout(body, cb);
-	};
-
-
-	Cart.remoteMethod(
-	    'checkout', {
-	    	http: {
-		        path: '/checkout',
-		      	verb: 'put'
-	    	},
-	    	accepts: [
-		    	{
-			      	arg: 'params',
-			      	type: 'any',
-			      	http: {
-			      		source: 'body'
-			      	}
-			    }
-		    ],
-	    	returns: {
-				arg: 'items',
-				description: 'Returns an HTTP 200, and the items in cart for this user, if everything goes well',
-				type: 'any'
-	    	}
-		}
-	);
+  Cart.remoteMethod(
+      'checkout', {
+        http: {
+          path: '/checkout',
+          verb: 'put',
+        },
+        accepts: [
+          {
+            arg: 'version',
+            type: 'object',
+            description: 'API version eg. v1, v2, etc.',
+            http: function(context) {
+              return {apiVersion: context.req.apiVersion};
+            },
+          },
+          {
+            arg: 'request',
+            type: 'object',
+            http: {
+              source: 'req',
+            },
+          },
+        ],
+        returns: {
+          arg: 'items',
+          description: 'Returns an HTTP 200, and the items in cart for this user, if everything goes well',
+          type: 'any',
+        },
+      }
+  );
 };
