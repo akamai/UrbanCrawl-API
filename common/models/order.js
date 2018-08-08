@@ -71,45 +71,51 @@ module.exports = function (Order) {
     }
   };
 
-  var _actionCode = Object.freeze({ GET_ORDERS: 1, DELETE_ORDER: 2 });
+  var _actionCode = Object.freeze({GET_ORDERS: 1, DELETE_ORDER: 2});
 
-  //Function to verify the token passed to it
-  var verifyToken = function(token, actionCode, body, cb) {
+  // Function to verify the token passed to it
+  var verifyTokenAndProceed = function(token, actionCode, body, cb) {
     var Token = app.models.Token;
-    Token.find({ where: { token: token } }, function (err, tokenFindResult) {
-
+    Token.find({where: {token: token}}, function(err, tokenFindResult) {
       if (!err) {
-        tokenFindResult = tokenFindResult[0];
+        if (tokenFindResult.length > 0) {
+          tokenFindResult = tokenFindResult[0];
 
-        var tokenIssuedDate = moment(tokenFindResult.createddate);
-        var dateNow = moment();
-        var diffInSecs = (dateNow.diff(tokenIssuedDate)) / 1000;
+          var tokenIssuedDate = moment(tokenFindResult.createddate);
+          var dateNow = moment();
+          var diffInSecs = (dateNow.diff(tokenIssuedDate)) / 1000;
 
-        var userId = tokenFindResult.userid;
+          var userId = tokenFindResult.userid;
 
-        if (diffInSecs <= tokenFindResult.ttl) {
-          //Token is still valid
-          switch (actionCode) {
-            case _actionCode.GET_ORDERS:
-              returnOrdersByUserId(userId, undefined, cb);
-              break;
-            case _actionCode.DELETE_ORDER:
-              // addItemToCart(body, userId, cb);
-              // returnOrders(userId, cb);
-              deleteOrder(userId, body.id, cb);
-              break;
-            default:
-              var error = new Error("Operation Not Defined");
-              error.status = 500;
-              cb(error, null);
+          if (diffInSecs <= tokenFindResult.ttl) {
+            // Token is still valid
+            switch (actionCode) {
+              case _actionCode.GET_ORDERS:
+                returnOrdersByUserId(userId, undefined, cb);
+                break;
+              case _actionCode.DELETE_ORDER:
+                // addItemToCart(body, userId, cb);
+                // returnOrders(userId, cb);
+                deleteOrder(userId, body.id, cb);
+                break;
+              default:
+                var error = new Error("Operation Not Defined");
+                error.status = 500;
+                cb(error, null);
+            }
+          } else {
+            // Token has expired
+            var error = new Error("Token Expired");
+            error.status = 401;
+            cb(error, null);
           }
-        } else {
-          //Token has expired
-          var error = new Error("Token Expired");
+          return;
+        }else{
+          // The token wasn't found, return that token was invalid
+          var error = new Error('Token Expired');
           error.status = 401;
           cb(error, null);
         }
-        return;
       }else{
         console.log("Error in finding provided Token: ",err);
         var error = new Error("Incorrect Authentication");
@@ -121,7 +127,6 @@ module.exports = function (Order) {
   }
 
   var returnOrdersByUserId = function(userId, orderId, cb) {
-	
     if (orderId === undefined) {
       var whereClause = {userid: userId};
     } else {
@@ -130,8 +135,8 @@ module.exports = function (Order) {
 
     Order.find({
       where: whereClause,
-      fields: { orderid: true, cityid: true, thumburl: true, quantity: true, totalprice: true, createdate: true }
-    }, function (err, orders) {
+      fields: {orderid: true, cityid: true, thumburl: true, quantity: true, totalprice: true, createdate: true}},
+      function(err, orders) {
       if (!err) {
         cb(null, orders);
       } else {
@@ -168,7 +173,7 @@ module.exports = function (Order) {
           return;
         } else {
           // try to verify token
-          verifyToken(sentToken, _actionCode.GET_ORDERS, null, cb);
+          verifyTokenAndProceed(sentToken, _actionCode.GET_ORDERS, null, cb);
         }
 
         break;
@@ -226,7 +231,7 @@ module.exports = function (Order) {
         } else {
           // try to verify token
           var body = {id: orderId};
-          verifyToken(sentToken, _actionCode.DELETE_ORDER, body, cb);
+          verifyTokenAndProceed(sentToken, _actionCode.DELETE_ORDER, body, cb);
         }
 
         break;
