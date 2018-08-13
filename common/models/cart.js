@@ -29,9 +29,11 @@ module.exports = function(Cart) {
         if (!err) {
           cb(null, result);
         } else {
-          var error = new Error("Something went wrong and we couldn't return the cart items. Write to us if this persists");
+          console.log('Cart : returnCart : error: Cart.find error: ', err);
+          var error = new Error();
+          error.message = 'Something went wrong and we couldn\'t return the cart items. Write to us if this persists';
+          error.errorCode = 'OTHER_ERROR';
           error.status = 500;
-          error.error_code = 'SERVER_ERROR';
           cb(error, null);
         }
       });
@@ -45,8 +47,6 @@ module.exports = function(Cart) {
     console.log('Account : Get Account : Sent Token : ', token);
     Token.find({where: {token: token}}, function(err, tokenFindResult) {
       if (!err) {
-        console.log('Account : Get Account : Token Find Result: ', tokenFindResult);
-
         if (tokenFindResult.length > 0) {
           tokenFindResult = tokenFindResult[0];
           var tokenIssuedDate = moment(tokenFindResult.createddate);
@@ -69,26 +69,38 @@ module.exports = function(Cart) {
                 Order.checkout(userId, cb);
                 break;
               default:
-                var error = new Error('Operation Not Defined');
+                console.log('Cart : verifyTokenAndProceed : error: Operation Not Defined');
+                var error = new Error();
+                error.message = 'Operation Not Defined';
+                error.errorCode = 'OTHER_ERROR';
                 error.status = 500;
                 cb(error, null);
             }
           } else {
           // The token wasn't found, return that token was invalid
-            var error = new Error('Token Expired');
-            error.status = 401;
+            console.log('Cart : verifyTokenAndProceed : error: Token Expired');
+            var error = new Error();
+            error.message = 'Token Expired';
+            error.errorCode = 'AUTH_EXPIRED';
+            error.status = 403;
             cb(error, null);
           }
         } else {
         // Token has expired
-          var error = new Error('Token Expired');
-          error.status = 401;
+          console.log('Cart : verifyTokenAndProceed : error: Token Expired (Token.find found 0 tokens): ');
+          var error = new Error();
+          error.message = 'Token Invalid';
+          error.errorCode = 'AUTH_INVALID';
+          error.status = 403;
           cb(error, null);
         }
         return;
       } else {
-        var error = new Error('Incorrect Authentication');
-        error.status = 401;
+        console.log('Cart : verifyTokenAndProceed : error: Token Expired (Token.find err): ', err);
+        var error = new Error();
+        error.message = 'Incorrect Authentication';
+        error.errorCode = 'AUTH_INVALID';
+        error.status = 403;
         cb(error, null);
         return;
       }
@@ -107,7 +119,10 @@ module.exports = function(Cart) {
         if (body === undefined ||
         body.cityid === undefined ||
         body.qty === undefined) {
-          var error = new Error('Supplied parameters are insufficient.');
+          console.log('Cart : addToCart : error: Supplied parameters are insufficient.');
+          var error = new Error();
+          error.message = 'Supplied parameters are insufficient.';
+          error.errorCode = 'INSUFFICIENT_PARAMETERS_SUPPLIED';
           error.status = 400;
           cb(error, null);
           return;
@@ -115,7 +130,10 @@ module.exports = function(Cart) {
 
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error('Authorization Required');
+          console.log('Cart : addToCart : error: Authorization Required');
+          var error = new Error();
+          error.message = 'Authorization Required';
+          error.errorCode = 'AUTH_REQUIRED';
           error.status = 400;
           cb(error, null);
           return;
@@ -125,9 +143,11 @@ module.exports = function(Cart) {
         }
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
-        error.error_code = 'INVALID_API_VERSION';
+        console.log('Cart : addToCart : error: invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -205,27 +225,37 @@ module.exports = function(Cart) {
                       // return a total number of items for this user
                       returnCart(userid, cb);
                     } else {
-                      var error = new Error("Something went wrong and we couldn't add a new item. Write to us if this persists");
+                      console.log('Cart : addItemToCart : error: Cart.create error: ', err);
+                      var error = new Error();
+                      error.message = 'Something went wrong and we couldn\'t add a new item. Write to us if this persists';
+                      error.errorCode = 'OTHER_ERROR';
                       error.status = 500;
-                      error.error_code = 'SERVER_ERROR';
                       cb(error, null);
                     }
                   });
               }
             } else {
-              var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+              console.log('Cart : addItemToCart : error: Cart.find error: ', err);
+              var error = new Error();
+              error.message = 'Something went wrong and we couldn\'t fulfil this request. Write to us if this persists';
+              error.errorCode = 'OTHER_ERROR';
               error.status = 500;
-              error.error_code = 'SERVER_ERROR';
               cb(error, null);
             }
           });
         } else {
-          var error = new Error('City not found');
+          console.log('Cart : addItemToCart : error: City not found');
+          var error = new Error();
+          error.message = 'City not found';
+          error.errorCode = 'RESOURCE_NOT_FOUND';
           error.status = 404;
           cb(error, null);
         }
       } else {
-        var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+        console.log('Cart : addItemToCart : error: City.find err: ', err);
+        var error = new Error();
+        error.message = 'Something went wrong and we couldn\'t fulfil this request. Write to us if this persists';
+        error.errorCode = 'OTHER_ERROR';
         error.status = 500;
         cb(error, null);
       }
@@ -242,9 +272,11 @@ module.exports = function(Cart) {
             if (!err) {
               returnCart(userid, cb);
             } else {
-              var error = new Error("Something went wrong and we couldn't update the cart. Write to us if this persists");
+              console.log('Cart : updateCart : error: City.updateAll err: ', err);
+              var error = new Error();
+              error.message = 'Something went wrong and we couldn\'t update the cart. Write to us if this persists';
+              error.errorCode = 'OTHER_ERROR';
               error.status = 500;
-              error.error_code = 'SERVER_ERROR';
               cb(error, null);
             }
           });
@@ -257,15 +289,19 @@ module.exports = function(Cart) {
               // respond with updated cart
               returnCart(userid, cb);
             } else {
-              var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+              console.log('Cart : updateCart : error: City.destroyAll -> Nothing was deleted: ');
+              var error = new Error();
+              error.message = 'Something went wrong and we couldn\'t fulfil this request. Write to us if this persists';
+              error.errorCode = 'OTHER_ERROR';
               error.status = 500;
-              error.error_code = 'SERVER_ERROR';
               cb(error, null);
             }
           } else {
-            var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+            console.log('Cart : updateCart : error: City.destroyAll err: ', err);
+            var error = new Error();
+            error.message = 'Something went wrong and we couldn\'t fulfil this request. Write to us if this persists';
+            error.errorCode = 'OTHER_ERROR';
             error.status = 500;
-            error.error_code = 'SERVER_ERROR';
             cb(error, null);
           }
         });
@@ -289,8 +325,11 @@ module.exports = function(Cart) {
         }
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Cart : getCart : error: City.destroyAll err: ', err);
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -333,7 +372,10 @@ module.exports = function(Cart) {
       case 'v2':
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error('Authorization Required');
+          console.log('Cart : checkout : error: Token was not sent');
+          var error = new Error();
+          error.message = 'Authorization Required';
+          error.errorCode = 'AUTH_REQUIRED';
           error.status = 400;
           cb(error, null);
           return;
@@ -343,8 +385,11 @@ module.exports = function(Cart) {
         }
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Cart : checkout : error: City.destroyAll err: ', err);
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
