@@ -49,7 +49,7 @@
   },
   "final:after": {
     "strong-error-handler": {"params": {
-      "safeFields": ["errorCode", "cause"]
+      "safeFields": ["errorCode", "message"]
     }}
   }
 }
