@@ -37,7 +37,10 @@ module.exports = function(City) {
             if (!err) {
               cb(null, result);
             } else {
-              var error = new Error("Something went wrong and we couldn't fulfill this request. Write to us if this persists");
+              console.log('Cities : getAllCities : error: ', err);
+              var error = new Error();
+              error.message = 'Something went wrong and we couldn\'t fulfill this request. Write to us if this persists';
+              error.errorCode = 'OTHER_ERROR';
               error.status = 500;
               cb(error, null);
             }
@@ -45,8 +48,11 @@ module.exports = function(City) {
         );
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Cities : getAllCities : invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -83,7 +89,10 @@ module.exports = function(City) {
         var placesOfCity;
 
         if (idToFind === undefined) {
-          var error = new Error('No id was supplied. You must supply a cidy id');
+          console.log('Cities : getCityDetails : error: no cityid supplied');
+          var error = new Error();
+          error.message = 'No id was supplied. You must supply a cidy id';
+          error.errorCode = 'RESOURCE_NOT_FOUND';
           error.status = 404;
           cb(error, null);
         } else {
@@ -96,12 +105,18 @@ module.exports = function(City) {
               if (result.length > 0) {
                 cb(null, result[0]);
               } else {
-                var error = new Error("Didn't find anything with this id");
+                console.log('Cities : getCityDetails : error: Didn\'t find anything with this id');
+                var error = new Error();
+                error.message = 'Didn\'t find anything with this id';
+                error.errorCode = 'RESOURCE_NOT_FOUND';
                 error.status = 404;
                 cb(error, null);
               }
             } else {
-              var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+              console.log('Cities : getCityDetails : error: ', err);
+              var error = new Error();
+              error.message = 'Something went wrong and we couldn\'t fulfill this request. Write to us if this persists';
+              error.errorCode = 'OTHER_ERROR';
               error.status = 500;
               cb(error, null);
             }
@@ -109,10 +124,12 @@ module.exports = function(City) {
         }
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Cities : getCityDetails : invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
-
     }
   };
 
@@ -155,10 +172,12 @@ module.exports = function(City) {
         Place.getAllPlacesOfCity(cityId, cb);
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Cities : getPlaceOfCity : invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
-
     }
   };
 
@@ -197,11 +216,12 @@ module.exports = function(City) {
   City.search = function(version, keyword, page, cb) {
     switch (version.apiVersion) {
       case 'v2':
-
         if (keyword === undefined) {
+          console.log('Cities : search : error: No keyword was supplied. You must supply a search keyword');
           var error = new Error();
           error.message = 'No keyword was supplied. You must supply a search keyword';
-          error.status = 404;
+          error.errorCode = 'INSUFFICIENT_PARAMETERS_SUPPLIED';
+          error.status = 400;
           cb(error, null);
         } else {
           if (page === undefined) {
@@ -260,8 +280,11 @@ module.exports = function(City) {
                         cb(null, result);
                       } else {
                         // Error
-                        var error = new Error('Some error occurred');
-                        error.status = 404;
+                        console.log('Cities : search : error in searching places: ', err);
+                        var error = new Error();
+                        error.message = 'Some error occurred';
+                        error.errorCode = 'OTHER_ERROR';
+                        error.status = 500;
                         cb(error, null);
                       }
                     }
@@ -274,7 +297,10 @@ module.exports = function(City) {
                   cb(null, result);
                 }
               } else {
-                var error = new Error("Something went wrong and we couldn't fulfil this request. Write to us if this persists");
+                console.log('Cities : search : error in searching city: ', err);
+                var error = new Error();
+                error.message = 'Something went wrong and we couldn\'t fulfill this request. Write to us if this persists';
+                error.errorCode = 'OTHER_ERROR';
                 error.status = 500;
                 cb(error, null);
               }
@@ -282,10 +308,11 @@ module.exports = function(City) {
         }
         break;
       default:
+        console.log('Cities : Search : invalid API version');
         var error = new Error();
-        error.status = 404;
         error.message = 'You must supply a valid api version';
         error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
 
     }
@@ -370,8 +397,11 @@ module.exports = function(City) {
         Place.getPlaceDetails(cityId, placeId, cb);
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Cities : getPlaceDetails : invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -420,10 +450,12 @@ module.exports = function(City) {
         Media.getAllMediaByPlaceId(cityId, placeId, type, cb);
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Cities : getPlaceDetails : invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
-
     }
   };
 
@@ -476,8 +508,11 @@ module.exports = function(City) {
         Media.getAllMediaByCityId(cityId, type, cb);
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Cities : getMediaOfCity : invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
