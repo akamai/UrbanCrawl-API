@@ -1,0 +1,8 @@
+INSUFFICIENT_PARAMETERS_SUPPLIED,   400, The request doesn't have all the required parameters
+AUTH_REQUIRED,                      401, The resource you are trying to access requires authentication and the correct auth headers are not present
+AUTH_INVALID,                       403, The auth header sent is invalid. It's either incorrect, incomplete or was not found
+AUTH_EXPIRED,                       403, The autg token sent in header has expired. Please login again
+RESOURCE_NOT_FOUND,                 404, The requested resource or item was not found
+PARTIALLY_COMPLETE,                 206, The requested was successful partially and the response contains only some data of it
+OTHER_ERROR,                        500, Some other error occurred
+INVALID_API_VERSION,                400, The API version sent is invalid
