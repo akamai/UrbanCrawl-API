@@ -325,7 +325,7 @@ module.exports = function(Cart) {
         }
         break;
       default:
-        console.log('Cart : getCart : error: City.destroyAll err: ', err);
+        console.log('Cart : getCart : error: Invalid API version: ');
         var error = new Error();
         error.message = 'You must supply a valid api version';
         error.errorCode = 'INVALID_API_VERSION';
