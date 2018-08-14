@@ -53,32 +53,37 @@ module.exports = function(Order) {
                           console.log('ORDER : Cart Delete: ', result);
                           returnOrdersByUserId(userId, orderid, cb);
                         } else {
-                          console.log('ORDER : Error in deleting cart: ', err);
-                          var error = new Error("Something went wrong and we couldn't clear your cart. Your order, however, has went through, check your account. Write to us if this persists");
-                          error.status = 500;
+                          console.log('Order : checkout : error: Cart.destroyAll: ', err);
+                          var error = new Error();
+                          error.message = 'Something went wrong and we couldn\'t clear your cart. Your order, however, has went through, check your account. Write to us if this persists';
+                          error.errorCode = 'PARTIALLY_COMPLETE';
+                          error.status = 206;
                           cb(error, null);
                         }
                       });
                   } else {
-                    console.log('ORDER : Error in creating order: ', err);
-                    var error = new Error("Something went wrong and we couldn't create your order. Your order, however, has went through, check your account. Write to us if this persists");
-                    error.status = 500;
+                    console.log('Order : checkout : error: Order.create: ', err);
+                    var error = new Error();
+                    error.message = 'Something went wrong and we couldn\'t create your order. Your order, however, has went through, check your account. Write to us if this persists';
+                    error.errorCode = 'PARTIALLY_COMPLETE';
+                    error.status = 206;
                     cb(error, null);
                   }
                 });
             }
           } else {
-            console.log('ORDER : No orders for the given userid ', userId);
-            var error = new Error('No cart items were found for the given user');
-            error.status = 400;
-            error.cause = 'No cart items were found for the given user';
+            console.log('Order : checkout : error: No orders for the given userid ', userId);
+            var error = new Error();
+            error.message = 'No cart items were found for the given user';
+            error.errorCode = 'RESOURCE_NOT_FOUND';
+            error.status = 404;
             cb(error, null);
           }
         } else {
-          console.log(
-            'Order : Checkout : Error at finding cart items for a userid:',
-            err);
-          var error = new Error("Something went wrong and we couldn't get the items to checkout. Write to us if this persists");
+          console.log('Order : checkout : error: Cart.find ', err);
+          var error = new Error();
+          error.message = 'Something went wrong and we couldn\'t get the items to checkout. Write to us if this persists';
+          error.errorCode = 'OTHER_ERROR';
           error.status = 500;
           cb(error, null);
         }
@@ -111,27 +116,38 @@ module.exports = function(Order) {
                 deleteOrder(userId, body.id, cb);
                 break;
               default:
-                var error = new Error('Operation Not Defined');
+                console.log('Order : verifyTokenAndProceed : error: Operation Not Defined');
+                var error = new Error();
+                error.message = 'Operation Not Defined';
+                error.errorCode = 'OTHER_ERROR';
                 error.status = 500;
                 cb(error, null);
             }
           } else {
-            // Token has expired
-            var error = new Error('Token Expired');
-            error.status = 401;
+            // The token wasn't found, return that token was invalid
+            console.log('Order : verifyTokenAndProceed : error: Token Expired (Token.find found 0 tokens): ');
+            var error = new Error();
+            error.message = 'Token Invalid';
+            error.errorCode = 'AUTH_INVALID';
+            error.status = 403;
             cb(error, null);
           }
           return;
-        } else{
-          // The token wasn't found, return that token was invalid
-          var error = new Error('Token Expired');
-          error.status = 401;
+        } else {
+          // Token has expired
+          console.log('Order : verifyTokenAndProceed : error: Token Expired');
+          var error = new Error();
+          error.message = 'Token Expired';
+          error.errorCode = 'AUTH_EXPIRED';
+          error.status = 403;
           cb(error, null);
         }
-      }else {
-        console.log('Error in finding provided Token: ', err);
-        var error = new Error('Incorrect Authentication');
-        error.status = 401;
+      } else {
+        console.log('Order : verifyTokenAndProceed : error: Token Expired (Token.find err): ', err);
+        var error = new Error();
+        error.message = 'Incorrect Authentication';
+        error.errorCode = 'AUTH_INVALID';
+        error.status = 403;
         cb(error, null);
         return;
       }
@@ -150,12 +166,15 @@ module.exports = function(Order) {
       fields: {orderid: true, cityid: true, thumburl: true, quantity: true, totalprice: true, createdate: true}},
       function(err, orders) {
         if (!err) {
-        cb(null, orders);
-      } else {
-        var error = new Error("Something went wrong and we couldn't get the items of the order. Write to us if this persists");
-        error.status = 500;
-        cb(error, null);
-      }
+          cb(null, orders);
+        } else {
+          console.log('Order : returnOrdersByUserId : error: Order.find: ', err);
+          var error = new Error();
+          error.message = 'Something went wrong and we couldn\'t get the items of the order. Write to us if this persists';
+          error.errorCode = 'OTHER_ERROR';
+          error.status = 500;
+          cb(error, null);
+        }
       });
   };
 
@@ -164,8 +183,11 @@ module.exports = function(Order) {
       function(err, result) {
         if (!err) {
           returnOrdersByUserId(userId, undefined, cb);
-        } else{
-          var error = new Error("Something went wrong and we couldn't delete the order. Write to us if this persists");
+        } else {
+          console.log('Order : deleteOrder : error: Order.destroyAll: ', err);
+          var error = new Error();
+          error.message = 'Something went wrong and we couldn\'t delete the order. Write to us if this persists';
+          error.errorCode = 'OTHER_ERROR';
           error.status = 500;
           cb(error, null);
         }
@@ -175,11 +197,13 @@ module.exports = function(Order) {
   Order.getAllOrders = function(version, req, cb) {
     switch (version.apiVersion) {
       case 'v2':
-
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error('Authorization Required');
-          error.status = 400;
+          console.log('Order : getAllOrders : error: Auth Required, sentToken was : ', sentToken);
+          var error = new Error();
+          error.message = 'Authorization Required';
+          error.errorCode = 'AUTH_REQUIRED';
+          error.status = 401;
           cb(error, null);
           return;
         } else {
@@ -189,8 +213,11 @@ module.exports = function(Order) {
 
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Order : getAllOrders : error: invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -231,11 +258,13 @@ module.exports = function(Order) {
   Order.deleteOrderByID = function(version, req, orderId, cb) {
     switch (version.apiVersion) {
       case 'v2':
-
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error('Authorization Required');
-          error.status = 400;
+          console.log('Order : deleteOrderByID : error: Auth Required, sentToken was : ', sentToken);
+          var error = new Error();
+          error.message = 'Authorization Required';
+          error.errorCode = 'AUTH_REQUIRED';
+          error.status = 401;
           cb(error, null);
           return;
         } else {
@@ -246,8 +275,11 @@ module.exports = function(Order) {
 
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Order : deleteOrderByID : error: invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };

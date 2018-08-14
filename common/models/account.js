@@ -41,11 +41,12 @@ module.exports = function(Account) {
           body.password === undefined ||
           body.full_name === undefined
         ) {
-          var bodyError = new Error(
-            'Insufficient parameters supplied.'
-          );
-          bodyError.status = 400;
-          cb(bodyError, null);
+          console.log('Account : register : error: Supplied parameters insufficient. Body: ', body);
+          var error = new Error();
+          error.message = 'Insufficient parameters supplied.';
+          error.errorCode = 'INSUFFICIENT_PARAMETERS_SUPPLIED';
+          error.status = 400;
+          cb(error, null);
           return;
         }
 
@@ -56,9 +57,10 @@ module.exports = function(Account) {
           if (!err) {
             registerWithKey(keys);
           } else {
-            var error = new Error(
-              'Couldn\t register. Reason : unavailable encryption resources. Please contact us'
-            );
+            console.log('Account : register : error: unavailable encryption resources.');
+            var error = new Error();
+            error.message = 'Couldn\'t register. Reason : unavailable encryption resources. Please contact us';
+            error.errorCode = 'OTHER_ERROR';
             error.status = 500;
             cb(error, null);
             return;
@@ -66,7 +68,7 @@ module.exports = function(Account) {
         });
 
         var registerWithKey = function(pair) {
-          Account.count({ email: body.email }, function(err, count) {
+          Account.count({email: body.email}, function(err, count) {
             if (!err) {
               if (count == 0) {
                 var plainPassword = body.password;
@@ -86,7 +88,7 @@ module.exports = function(Account) {
                         email: body.email,
                         password: hash,
                         full_name: body.full_name,
-                        createdate: dateNow
+                        createdate: dateNow,
                       },
                       function(err, createResult) {
                         if (!err) {
@@ -105,7 +107,7 @@ module.exports = function(Account) {
                             {
                               token: sha256Token,
                               userid: userId,
-                              createddate: dateNow
+                              createddate: dateNow,
                             },
                             function(err, result) {
                               if (!err) {
@@ -114,42 +116,70 @@ module.exports = function(Account) {
                                 var env = process.env.NODE_ENV;
                                 if (env !== undefined && env === 'demo') {
                                   if (!sendTokenToGateway(sha256Token)) {
-                                    cb(new Error('Unable to create key'), null);
+                                    console.log('Account : registerWithKey : Unable to create key');
+                                    var error = new Error();
+                                    error.message = 'Unable to create key';
+                                    error.errorCode = 'OTHER_ERROR';
+                                    error.status = 500;
+                                    cb(error, null);
                                   }
                                 }
                                 cb(null, {
                                   status: 'ok',
                                   token: sha256Token,
-                                  expires_in_seconds: ttl
+                                  expires_in_seconds: ttl,
                                 });
                               } else {
-                                cb(err, null);
+                                console.log('Account : registerWithKey : error: Token.create', err);
+                                var error = new Error();
+                                error.message = 'Some error occurred';
+                                error.errorCode = 'OTHER_ERROR';
+                                error.status = 500;
+                                cb(error, null);
                               }
                             }
                           );
                         } else {
-                          cb(err, null);
+                          console.log('Account : registerWithKey : error: Account.create', err);
+                          var error = new Error();
+                          error.message = 'Some error occurred';
+                          error.errorCode = 'OTHER_ERROR';
+                          error.status = 500;
+                          cb(error, null);
                         }
                       }
                     );
                   } else {
-                    cb(err, null);
+                    console.log('Account : registerWithKey : error: bcrypt.hash', err);
+                    var error = new Error();
+                    error.message = 'Some error occurred';
+                    error.errorCode = 'OTHER_ERROR';
+                    error.status = 500;
+                    cb(error, null);
                   }
                 });
               } else {
-                cb(null, { status: 'error', message: 'Email already exists' });
+                cb(null, {status: 'error', message: 'Email already exists'});
               }
               return;
             } else {
-              cb(err, null);
+              console.log('Account : registerWithKey : error : Account.count', err);
+              var error = new Error();
+              error.message = 'Some error occurred';
+              error.errorCode = 'OTHER_ERROR';
+              error.status = 500;
+              cb(error, null);
             }
           });
         };
 
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Account : register : error: invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -157,30 +187,30 @@ module.exports = function(Account) {
   Account.remoteMethod('register', {
     http: {
       path: '/',
-      verb: 'put'
+      verb: 'put',
     },
     accepts: [
       {
-        arg: 'version', 
-        type: 'object', 
+        arg: 'version',
+        type: 'object',
         description: 'API version eg. v1, v2, etc.',
         http: function(context) {
           return {apiVersion: context.req.apiVersion};
-        }
+        },
       },
       {
-        arg: 'items', 
-        type: 'object', 
+        arg: 'items',
+        type: 'object',
         http: {
-          source: 'body'
-        }
-      }
+          source: 'body',
+        },
+      },
     ],
     returns: {
       arg: 'token',
       description: 'Returns a token when successful',
-      type: 'string'
-    }
+      type: 'string',
+    },
   });
 
   // {
@@ -198,7 +228,10 @@ module.exports = function(Account) {
           body.email === undefined ||
           body.password === undefined
         ) {
-          var error = new Error('Insufficient parameters supplied.');
+          console.log('Account : login : error: Supplied parameters insufficient. Body: ', body);
+          var error = new Error();
+          error.message = 'Insufficient parameters supplied.';
+          error.errorCode = 'INSUFFICIENT_PARAMETERS_SUPPLIED';
           error.status = 400;
           cb(error, null);
           return;
@@ -212,9 +245,10 @@ module.exports = function(Account) {
           if (!err) {
             loginWithKey(keys);
           } else {
-            var error = new Error(
-              'Couldn\'t login. Reason : unavailable encryption resources. Please contact us'
-            );
+            console.log('Account : login : error:  unavailable encryption resources');
+            var error = new Error();
+            error.message = 'Couldn\'t login. Reason : unavailable encryption resources. Please contact us';
+            error.errorCode = 'OTHER_ERROR';
             error.status = 500;
             cb(error, null);
             return;
@@ -246,18 +280,18 @@ module.exports = function(Account) {
 
                       var Token = app.models.Token;
                       // var moment = require('moment');
-                      
+
                       // First delete any tokens that exist for this userid
-                      Token.destroyAll({userid: findResults[0].userid}, 
+                      Token.destroyAll({userid: findResults[0].userid},
                       function(err, results) {
                         console.log('Login : Token : deleted existing: ', results);
                         if (!err) {
                           Token.create({
                             token: sha256Token,
                             userid: findResults[0].userid,
-                            createddate: dateNow
+                            createddate: dateNow,
                           }, function(err, result) {
-                            console.log("Login : Token : Create Result: ", result);
+                            console.log('Login : Token : Create Result: ', result);
                             if (!err) {
                               // blocking call to send these tokens to APIG
                               // if this fails, we send an error back as response
@@ -270,16 +304,22 @@ module.exports = function(Account) {
                               cb(null, {
                                 status: 'ok',
                                 token: sha256Token,
-                                expires_in_seconds: ttl
+                                expires_in_seconds: ttl,
                               });
                             } else {
-                              cb(err, null);
+                              console.log('Account : login : error:  Token.create : ', err);
+                              var error = new Error();
+                              error.message = 'Some error occurred';
+                              error.errorCode = 'OTHER_ERROR';
+                              error.status = 500;
+                              cb(error, null);
                             }
                           });
                         } else {
-                          var error = new Error(
-                            'Couldn\'t create new tokens : failed to delete. Please contact us if this persists'
-                          );
+                          console.log('Account : login : error:  Token.destroyAll : failed to delete.', err);
+                          var error = new Error();
+                          error.message = 'Couldn\'t create new tokens : failed to delete. Please contact us if this persists';
+                          error.errorCode = 'OTHER_ERROR';
                           error.status = 500;
                           cb(error, null);
                           return;
@@ -288,25 +328,38 @@ module.exports = function(Account) {
                     } else if (valid == false) {
                       cb(null, {
                         status: 'error',
-                        message: 'Incorrect Password'
+                        message: 'Incorrect Password',
                       });
                     }
                   } else {
-                    cb(err, null);
+                    console.log('Account : login : error:  bcrypt.compare', err);
+                    var error = new Error();
+                    error.message = 'Some error occurred and we couldn\'t verify your password';
+                    error.errorCode = 'OTHER_ERROR';
+                    error.status = 500;
+                    cb(error, null);
                   }
                 });
               } else {
-                cb(null, { status: 'error', message: 'email not found' });
+                cb(null, {status: 'error', message: 'email not found'});
               }
             } else {
-              cb(err, null);
+              console.log('Account : login : error:  Account.find', err);
+              var error = new Error();
+              error.message = 'Error while finding your Account';
+              error.errorCode = 'OTHER_ERROR';
+              error.status = 500;
+              cb(error, null);
             }
           });
         };
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Account : login : error: Invalid API Version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -314,30 +367,30 @@ module.exports = function(Account) {
   Account.remoteMethod('login', {
     http: {
       path: '/',
-      verb: 'post'
+      verb: 'post',
     },
     accepts: [
       {
-        arg: 'version', 
-        type: 'object', 
+        arg: 'version',
+        type: 'object',
         description: 'API version eg. v1, v2, etc.',
         http: function(context) {
-            return {apiVersion: context.req.apiVersion};
-        }
+          return {apiVersion: context.req.apiVersion};
+        },
       },
       {
-        arg: 'items', 
-        type: 'any', 
+        arg: 'items',
+        type: 'any',
         http: {
-          source: 'body'
-        }
-      }
+          source: 'body',
+        },
+      },
     ],
     returns: {
       arg: 'token',
       description: 'Returns a token when successful',
-      type: 'string'
-    }
+      type: 'string',
+    },
   });
 
   const ApiKeyGroup = 'UrbanCrawlUserCollection';
@@ -354,7 +407,7 @@ module.exports = function(Account) {
       path: '/apikey-manager-api/v1/collections',
       method: 'GET',
       headers: {},
-      body: {}
+      body: {},
     });
 
     try {
@@ -410,7 +463,7 @@ module.exports = function(Account) {
       path: '/apikey-manager-api/v1/collections',
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: {
         name: 'UrbanCrawlUserCollection',
@@ -427,10 +480,10 @@ module.exports = function(Account) {
             denyNextHeaderShown: true,
             allowLimitHeaderShown: true,
             allowRemainingHeaderShown: true,
-            allowResetHeaderShown: true
-          }
-        }
-      }
+            allowResetHeaderShown: true,
+          },
+        },
+      },
     });
 
     try {
@@ -472,7 +525,7 @@ module.exports = function(Account) {
       path: '/apikey-manager-api/v1/keys',
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: {
         collectionId: collectionId,
@@ -480,8 +533,8 @@ module.exports = function(Account) {
         tags: ['single', 'new'],
         value: sha256Token,
         label: 'Access Token',
-        description: 'Access Token for Urban Crawl User'
-      }
+        description: 'Access Token for Urban Crawl User',
+      },
     });
 
     try {
@@ -504,10 +557,10 @@ module.exports = function(Account) {
   // Function to verify the token passed to it
   var verifyTokenAndProceed = function(token, body, actionCode, cb) {
     var Token = app.models.Token;
-    console.log("Account : Get Account : Sent Token : ", token);
+    console.log('Account : Get Account : Sent Token : ', token);
     Token.find({where: {token: token}}, function(err, tokenFindResult) {
       if (!err) {
-        console.log("Account : Get Account : Token Find Result: ", tokenFindResult);
+        console.log('Account : Get Account : Token Find Result: ', tokenFindResult);
 
         if (tokenFindResult.length > 0) {
           tokenFindResult = tokenFindResult[0];
@@ -529,28 +582,39 @@ module.exports = function(Account) {
                 saveProfileUpdates(body, userId, cb);
                 break;
               default:
-                var error = new Error('Operation Not Defined');
+                console.log('Account : verifyTokenAndProceed : error: Operation Not Defined');
+                var error = new Error();
+                error.message = 'Operation Not Defined';
+                error.errorCode = 'OTHER_ERROR';
                 error.status = 500;
                 cb(error, null);
             }
+          } else {
+            // Token has expired
+            console.log('Account : verifyTokenAndProceed : error: Token Expired');
+            var error = new Error();
+            error.message = 'Token Expired';
+            error.errorCode = 'AUTH_EXPIRED';
+            error.status = 403;
+            cb(error, null);
+          }
         } else {
           // The token wasn't found, return that token was invalid
-          var error = new Error('Token Expired');
-          error.status = 401;
+          console.log('Account : verifyTokenAndProceed : error: Token Expired (Token.find found 0 tokens): ');
+          var error = new Error();
+          error.message = 'Token Invalid';
+          error.errorCode = 'AUTH_INVALID';
+          error.status = 403;
           cb(error, null);
         }
-      } else {
-        // Token has expired
-        var error = new Error('Token Expired');
-        error.status = 401;
-        cb(error, null);
-      }
         return;
       } else {
-        var error = new Error('Incorrect Authentication');
-        error.status = 401;
+        console.log('Account : verifyTokenAndProceed : error: Token Expired (Token.find err): ', err);
+        var error = new Error();
+        error.message = 'Incorrect Authentication';
+        error.errorCode = 'AUTH_INVALID';
+        error.status = 403;
         cb(error, null);
-        return;
       }
     });
   };
@@ -591,13 +655,15 @@ module.exports = function(Account) {
             status: 'ok',
             updated_profile: {
               email: body.email,
-              full_name: body.full_name
-            }
+              full_name: body.full_name,
+            },
           };
           cb(null, result);
         } else {
-          console.log('Account : Update : Error :', err);
-          var error = new Error('Something went wrong and we couldn\'t update the profile. Write to us if this persists');
+          console.log('Account : saveProfileUpdates : error: Account.update: ', err);
+          var error = new Error();
+          error.message = 'Something went wrong and we couldn\'t update the profile. Write to us if this persists';
+          error.errorCode = 'OTHER_ERROR';
           error.status = 500;
           cb(error, null);
         }
@@ -616,14 +682,15 @@ module.exports = function(Account) {
           var result = {
             userid: findResults.userid,
             email: findResults.email,
-            full_name: findResults.full_name
+            full_name: findResults.full_name,
           };
 
           cb(null, result);
         } else {
-          var error = new Error(
-            'Something went wrong and we couldn\'t fetch the profile. Write to us if this persists'
-          );
+          console.log('Account : returnUserProfile : error: Account.find: ', err);
+          var error = new Error();
+          error.message = 'Something went wrong and we couldn\'t fetch the profile. Write to us if this persists';
+          error.errorCode = 'OTHER_ERROR';
           error.status = 500;
           cb(error, null);
         }
@@ -638,8 +705,11 @@ module.exports = function(Account) {
       case 'v2':
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error('Authorization Required');
-          error.status = 400;
+          console.log('Account : updateProfile : error: Auth Required, sentToken was : ', sentToken);
+          var error = new Error();
+          error.message = 'Authorization Required';
+          error.errorCode = 'AUTH_REQUIRED';
+          error.status = 401;
           cb(error, null);
           return;
         } else {
@@ -653,8 +723,11 @@ module.exports = function(Account) {
         }
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
+        console.log('Account : updateProfile : error: invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -662,7 +735,7 @@ module.exports = function(Account) {
   Account.remoteMethod('updateProfile', {
     http: {
       path: '/update',
-      verb: 'post'
+      verb: 'post',
     },
     accepts: [
       {
@@ -670,29 +743,29 @@ module.exports = function(Account) {
         type: 'object',
         description: 'API version eg. v1, v2, etc.',
         http: function(context) {
-          return { apiVersion: context.req.apiVersion };
-        }
+          return {apiVersion: context.req.apiVersion};
+        },
       },
       {
         arg: 'items',
         type: 'object',
         http: {
-          source: 'body'
-        }
+          source: 'body',
+        },
       },
       {
         arg: 'request',
         type: 'object',
         http: {
-          source: 'req'
-        }
-      }
+          source: 'req',
+        },
+      },
     ],
     returns: {
       arg: 'result',
       description: 'Returns the updated profile when successful',
-      type: 'string'
-    }
+      type: 'string',
+    },
   });
 
   // Get Profile of the logged in user
@@ -702,9 +775,11 @@ module.exports = function(Account) {
       case 'v2':
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error('Authorization Required');
-          error.status = 400;
-          error.error_code = 'AUTHORIZATION_REQUIRED';
+          console.log('Account : getProfile : error: Auth Required, sentToken was : ', sentToken);
+          var error = new Error();
+          error.message = 'Authorization Required';
+          error.errorCode = 'AUTH_REQUIRED';
+          error.status = 401;
           cb(error, null);
           return;
         } else {
@@ -713,9 +788,11 @@ module.exports = function(Account) {
         }
         break;
       default:
-        var error = new Error('You must supply a valid api version');
-        error.status = 404;
-        error.error_code = 'INVALID_API_VERSION';
+        console.log('Account : updateProfile : error: invalid API version');
+        var error = new Error();
+        error.message = 'You must supply a valid api version';
+        error.errorCode = 'INVALID_API_VERSION';
+        error.status = 400;
         cb(error, null);
     }
   };
@@ -723,7 +800,7 @@ module.exports = function(Account) {
   Account.remoteMethod('getProfile', {
     http: {
       path: '/',
-      verb: 'get'
+      verb: 'get',
     },
     accepts: [
       {
@@ -731,21 +808,21 @@ module.exports = function(Account) {
         type: 'object',
         description: 'API version eg. v1, v2, etc.',
         http: function(context) {
-          return { apiVersion: context.req.apiVersion };
-        }
+          return {apiVersion: context.req.apiVersion};
+        },
       },
       {
         arg: 'request',
         type: 'object',
         http: {
-          source: 'req'
-        }
-      }
+          source: 'req',
+        },
+      },
     ],
     returns: {
       arg: 'result',
       description: 'Returns the logged in user\'s profile',
-      type: 'string'
-    }
+      type: 'string',
+    },
   });
 };
