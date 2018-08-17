@@ -231,6 +231,8 @@ module.exports = function(City) {
           var offset = (page - 1) * count;
 
           // Calculate offset as per page and supply that too
+          // We are currently not givin offset/skip values to Cities search, because of the Slice logic later on.
+          // Slicing logic, on #273, depends on the logic that the Cities search doesn't have any offset or skip set.
           City.find({
             where: {
               or: [
