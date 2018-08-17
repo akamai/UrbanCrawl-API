@@ -133,8 +133,8 @@ module.exports = function(Cart) {
           console.log('Cart : addToCart : error: Authorization Required');
           var error = new Error();
           error.message = 'Authorization Required';
+          error.status = 401;
           error.errorCode = 'AUTH_REQUIRED';
-          error.status = 400;
           cb(error, null);
           return;
         } else {
@@ -315,8 +315,10 @@ module.exports = function(Cart) {
       case 'v2':
         var sentToken = req.headers.authorization;
         if (sentToken === undefined) {
-          var error = new Error('Authorization Required');
-          error.status = 400;
+          var error = new Error();
+          error.message = 'Authorization Required';
+          error.status = 401;
+          error.errorCode = 'AUTH_REQUIRED';
           cb(error, null);
           return;
         } else {
@@ -375,8 +377,8 @@ module.exports = function(Cart) {
           console.log('Cart : checkout : error: Token was not sent');
           var error = new Error();
           error.message = 'Authorization Required';
+          error.status = 401;
           error.errorCode = 'AUTH_REQUIRED';
-          error.status = 400;
           cb(error, null);
           return;
         } else {

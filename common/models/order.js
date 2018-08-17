@@ -202,8 +202,8 @@ module.exports = function(Order) {
           console.log('Order : getAllOrders : error: Auth Required, sentToken was : ', sentToken);
           var error = new Error();
           error.message = 'Authorization Required';
-          error.errorCode = 'AUTH_REQUIRED';
           error.status = 401;
+          error.errorCode = 'AUTH_REQUIRED';
           cb(error, null);
           return;
         } else {
@@ -263,8 +263,8 @@ module.exports = function(Order) {
           console.log('Order : deleteOrderByID : error: Auth Required, sentToken was : ', sentToken);
           var error = new Error();
           error.message = 'Authorization Required';
-          error.errorCode = 'AUTH_REQUIRED';
           error.status = 401;
+          error.errorCode = 'AUTH_REQUIRED';
           cb(error, null);
           return;
         } else {
