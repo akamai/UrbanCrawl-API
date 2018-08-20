@@ -1,0 +1,312 @@
+swagger: '2.0'
+info:
+  version: 2.0.0
+  title: '@akamai/urbancrawl-api'
+basePath: '/'
+paths:
+  /v2/account:
+    put:
+      summary: Creates a new account
+      tags:
+        - account
+      operationId: account.register
+      parameters:
+        - in: body
+          name: items
+          required: false
+          schema:
+            $ref: '#/definitions/registerAccount'
+      responses:
+        200:
+          description: Request was successful
+          schema:
+            type: object
+            properties:
+              token:
+                description: Returns a token when successful
+                type: string
+        400:
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+        500:
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /v2/cart:
+    post:
+      summary: Adds a single city to the cart of the authorized user, expects you to send the authToken of the user in the header.
+      tags:
+        - cart
+      operationId: cart.addToCart
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: itemBody
+          description: Details of the city and it's quanity to add. The user for which this city needs to be added, will be deduced from the authToken that you send in the header. Check the required header values for this API.
+          
+            Also used to update the existing items (mainly quantity) in the cart. If you send a cityId which already exists, it's quantity, and thus it's total price will be updated.
+            
+            To delete an item, send the quantity as 0
+          schema:
+            $ref: '#/definitions/cartRequest'
+        - in: header
+          name: Authentication
+          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        200:
+          description: If the city is successfully added to the authorized user's cart, all the items of the user's cart are returned
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/cartResponse'
+        400:
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+        500:
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+    get:
+      summary: Returns all the items present in the authorized user's cart. Returns an empty array if there are no items present
+      tags:
+        - cart
+      operationId: cart.getCart
+      parameters:
+        - in: header
+          name: Authentication
+          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        200:
+          description: Returns all the items present in the currently authorized user's cart. Returns an empty 'items' array if the cart is empty
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/cartResponse'
+        400:
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+        500:
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /v2/cart/checkout:
+    put:
+      summary: Initiates checkout process for the authorized user. During this process, an order is created, all the items in the cart of the authorized users are added to this order, and these items are deleted from the user's cart. The response is the order details.
+      tags:
+        - cart
+      operationId: cart.checkout
+      parameters:
+        - in: header
+          name: Authentication
+          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        200:
+          description: Returns the items in the order, when the request was successful
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/orderResponse'
+        206:
+          description: The code of HTTP 206 indicates that an error has occured during the operation which prevented from the whole operation from going through.
+          
+            Typical examples are, the order went through but the cart couldn't be cleared. Or, the order was taken, but the correct response couldn't be sent. You should read the error response object, defined later for this endpoint, to understand the cause
+        400:
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+        500:
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /v2/orders:
+    get:
+      summary: Lists all the orders made by the authorized user (The user whose access token is supplied)
+      tags:
+        - order
+      operationId: order.getAllOrders
+      parameters:
+        - in: header
+          name: Authentication
+          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        200:
+          description: Lists all the orders of the user whose auth token was supplied. Returns an empty
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/orderResponse'
+        400:
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+        500:
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /v2/orders/{orderId}:
+    delete:
+      summary: Deletes the order whose id is provided, from the order history of the authorized user
+      tags:
+        - order
+      operationId: order.deleteOrderByID
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          type: string
+          description: The order ID to be deleted.
+        - in: header
+          name: Authentication
+          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        200:
+          description: If the given order id was deleted successfully, returns a list of all the orders by the authorized user 
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+        400:
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+        500:
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+definitions:
+  registerAccount:
+    properties:
+      email:
+        type: string
+        example: 'foo@bar.com'
+      password:
+        type: string
+        example: 'foobar'
+      full_name:
+        type: string
+        example: 'Foo Bar'
+    additionalProperties: false
+  cartRequest:
+    properties:
+      cityid:
+        type: number
+        format: double
+        example: 44
+      qty:
+        type: number
+        format: double
+        example: 2
+    additionalProperties: false
+  cartResponse:
+    properties:
+      cityid:
+        type: number
+        format: double
+        example: 44
+      thumburl:
+        type: string
+        example: http://static.urbancrawlapp.com/img/Boston/Boston-Skyline-iStock-469769544.jpg
+      quantity:
+        type: number
+        format: double
+        example: 2
+      totalprice:
+        type: number
+        format: double
+        example: 50
+    additionalProperties: false
+  orderResponse:
+    properties:
+      cityid:
+        type: number
+        format: double
+        example: 44
+      thumburl:
+        type: string
+        example: http://static.urbancrawlapp.com/img/Boston/Boston-Skyline-iStock-469769544.jpg
+      quantity:
+        type: number
+        format: double
+        example: 2
+      totalprice:
+        type: number
+        format: double
+        example: 50
+      orderid:
+        type: string
+        example: '1534783640582'
+      createdate:
+        type: string
+        example: '2018-08-20T00:00:00.000Z'
+    additionalProperties: false
+  errorResponse:
+    properties:
+      statusCode:
+        type: number
+        format: integer
+        example: 401
+      name:
+        type: string
+        example: Error
+      message:
+        type: string
+        example: Authorization Required
+      errorCode:
+        type: string
+        example: AUTH_REQUIRED
+    additionalProperties: false
+securityDefinitions:
+  # X-API-Key: abcdef12345
+  AuthHeader:
+    type: apiKey
+    in: header
+    name: Authorization
