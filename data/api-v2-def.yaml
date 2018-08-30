@@ -325,7 +325,7 @@ paths:
           description : accepted values are either 'image' or 'video', denoting the media type that you want
       responses:
         200:
-          description: Request was successful, and you get a list of all the media that belongs to this city
+          description: Request was successful, the response is a list of all the media that belongs to this city
           schema:
             description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied'
             type: array
@@ -367,7 +367,7 @@ paths:
           description : accepted values are either 'image' or 'video', denoting the media type that you want
       responses:
         200:
-          description: Request was successful, and you get a list of all the media that belongs to this city
+          description: The request was successful, the response is a list of all the media that belongs to this city
           schema:
             description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied'
             type: array
@@ -398,7 +398,7 @@ paths:
           format: double
       responses:
         200:
-          description: Returns a JSON object containing all the places of a city whose ID is supplied
+          description: Returns a JSON array containing all the places of a city whose ID is supplied
           schema:
             type: array
             items:
@@ -466,7 +466,7 @@ paths:
           format: double
           description: Optional. Default is 1
       responses:
-        '200':
+        200:
           description: Returns a JSON array of all the available Cities and Places that match the supplied keyword, along with meta information about pagination.
               
             If no cities match the keyword, returns all the matching places.
@@ -480,6 +480,15 @@ paths:
             type: array
             items:
               $ref: '#/definitions/searchResults'
+        400:
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+        500:
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
       deprecated: false
   /v2/orders:
     get:
@@ -540,8 +549,8 @@ paths:
           schema:
             type: object
             properties:
-              error:
-                $ref: '#/definitions/errorResponse'
+              items:
+                $ref: '#/definitions/orderResponse'
         400:
           description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
         500:
@@ -699,7 +708,9 @@ definitions:
         type: number
         format: double
       places:
-        $ref: '#/definitions/place'
+        type: array
+        items:
+          $ref: '#/definitions/place'
     additionalProperties: false
   searchResults:
     properties:
