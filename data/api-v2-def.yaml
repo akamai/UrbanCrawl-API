@@ -636,6 +636,12 @@ definitions:
         type: number
         format: double
         example: 50
+      cityname:
+        type: string
+        example: Boston
+      description:
+        type: string
+        example: Boston is one of the oldest cities in the United States..
     additionalProperties: false
   cityList:
     properties:
