@@ -76,8 +76,8 @@ paths:
       operationId: account.getProfile
       parameters:
         - in: header
-          name: Authentication
-          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          name: Authorization
+          description: Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
           type: string
           required: true
       security:
@@ -91,7 +91,7 @@ paths:
               result:
                 $ref: '#/definitions/profileResponse'
         400:
-          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, incorrect authentication etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, incorrect Authorization etc.). You should read the error response object, defined later for this endpoint, to understand the cause
         500:
           description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
           schema:
@@ -108,8 +108,8 @@ paths:
       operationId: account.updateProfile
       parameters:
         - in: header
-          name: Authentication
-          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          name: Authorization
+          description: Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
           type: string
           required: true
         - in: body
@@ -129,7 +129,7 @@ paths:
               result:
                 $ref: '#/definitions/profileResponse'
         400:
-          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, incorrect authentication etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, incorrect Authorization etc.). You should read the error response object, defined later for this endpoint, to understand the cause
         500:
           description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
           schema:
@@ -157,8 +157,8 @@ paths:
           schema:
             $ref: '#/definitions/cartRequest'
         - in: header
-          name: Authentication
-          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          name: Authorization
+          description: Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
           type: string
           required: true
       security:
@@ -174,7 +174,7 @@ paths:
                 items:
                   $ref: '#/definitions/cartResponse'
         400:
-          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
         500:
           description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
           schema:
@@ -190,8 +190,8 @@ paths:
       operationId: cart.getCart
       parameters:
         - in: header
-          name: Authentication
-          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          name: Authorization
+          description: Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
           type: string
           required: true
       security:
@@ -207,7 +207,7 @@ paths:
                 items:
                   $ref: '#/definitions/cartResponse'
         400:
-          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
         500:
           description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
           schema:
@@ -224,8 +224,8 @@ paths:
       operationId: cart.checkout
       parameters:
         - in: header
-          name: Authentication
-          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          name: Authorization
+          description: Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
           type: string
           required: true
       security:
@@ -245,7 +245,7 @@ paths:
           
             Typical examples are, the order went through but the cart couldn't be cleared. Or, the order was taken, but the correct response couldn't be sent. You should read the error response object, defined later for this endpoint, to understand the cause
         400:
-          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
         500:
           description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
           schema:
@@ -489,8 +489,8 @@ paths:
       operationId: order.getAllOrders
       parameters:
         - in: header
-          name: Authentication
-          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          name: Authorization
+          description: Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
           type: string
           required: true
       security:
@@ -506,7 +506,7 @@ paths:
                 items:
                   $ref: '#/definitions/orderResponse'
         400:
-          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
         500:
           description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
           schema:
@@ -528,8 +528,8 @@ paths:
           type: string
           description: The order ID to be deleted.
         - in: header
-          name: Authentication
-          description: Send an "Authentication [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
+          name: Authorization
+          description: Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user's account and cart. Obtain this token by either registering or logging in
           type: string
           required: true
       security:
@@ -543,7 +543,7 @@ paths:
               error:
                 $ref: '#/definitions/errorResponse'
         400:
-          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, authentication being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
+          description: The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause
         500:
           description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
           schema:
