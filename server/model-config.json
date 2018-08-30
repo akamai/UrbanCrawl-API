@@ -97,7 +97,7 @@
           "addToCart": true,
           "updateCart": false,
           "getCart": true,
-          "checkout":true
+          "checkout": true
         }
       }
     }

@@ -24,10 +24,33 @@ var moment = require('moment');
 module.exports = function(Cart) {
   var returnCart = function(userid, cb) {
     Cart.find({where: {userid: userid},
-      fields: {cityid: true, quantity: true, totalprice: true, thumburl: true}},
-      function(err, result) {
+      fields: {cityid: true, quantity: true, totalprice: true, thumburl: true},
+      // include: {relation: 'cities', scope: {fields: ['name', 'description']}},
+    },
+      function(err, cartItems) {
+        var cityDetails = [];
         if (!err) {
-          cb(null, result);
+          // Fetching city details for each of the cart items
+          var City = app.models.City;
+          City.find({
+            fields: {id: true, name: true, description: true},
+          }, function(err, cityResults) {
+            if (!err) {
+              for (var j in cityResults) {
+                cityDetails['' + cityResults[j].id] = {
+                  name: cityResults[j].name,
+                  description: cityResults[j].description,
+                };
+              }
+              for (var i in cartItems) {
+                cartItems[i].cityname = cityDetails[cartItems[i].cityid].name;
+                cartItems[i].description = cityDetails[cartItems[i].cityid].description;
+              }
+              cb(null, cartItems);
+            } else {
+              console.log('Cart : returnCart : Some error in fetching all the cities', err);
+            }
+          });
         } else {
           console.log('Cart : returnCart : error: Cart.find error: ', err);
           var error = new Error();

@@ -2,14 +2,19 @@
   "name": "account",
   "plural": "account",
   "base": "PersistedModel",
-  "type": "Account",
   "idInjection": true,
   "options": {
     "validateUpsert": true
   },
+  "type": "Account",
   "http": {
     "path": ":apiVersion/account"
   },
+  "hidden": [
+    "id",
+    "userid",
+    "createdate"
+  ],
   "properties": {
     "userid": {
       "type": "string",
@@ -32,7 +37,6 @@
       "required": false
     }
   },
-  "hidden": ["id", "userid", "createdate"],
   "validations": [],
   "relations": {},
   "acls": [],

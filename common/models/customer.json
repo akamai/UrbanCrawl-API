@@ -6,6 +6,9 @@
   "options": {
     "validateUpsert": true
   },
+  "http": {
+    "path": ":apiVersion/customer"
+  },
   "properties": {
     "userid": {
       "type": "string",
@@ -27,9 +30,6 @@
       "type": "date",
       "required": true
     }
-  },
-  "http": {
-    "path" : ":apiVersion/customer"
   },
   "validations": [],
   "relations": {},

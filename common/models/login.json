@@ -2,9 +2,15 @@
   "name": "login",
   "plural": "login",
   "base": "account",
-  "type": "Login",
   "idInjection": false,
-  "excludeBaseProperties": ["id", "userid", "full_name", "createdate"],
+  "type": "Login",
+  "excludeBaseProperties": [
+    "id",
+    "userid",
+    "full_name",
+    "createdate"
+  ],
+  "properties": {},
   "validations": [],
   "relations": {},
   "acls": [],

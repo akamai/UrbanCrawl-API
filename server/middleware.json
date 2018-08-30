@@ -36,7 +36,8 @@
   "routes": {
     "loopback#rest": {
       "paths": [
-        "${restApiRoot}"      ]
+        "${restApiRoot}"
+      ]
     }
   },
   "files": {
@@ -48,8 +49,13 @@
     "loopback#urlNotFound": {}
   },
   "final:after": {
-    "strong-error-handler": {"params": {
-      "safeFields": ["errorCode", "message"]
-    }}
+    "strong-error-handler": {
+      "params": {
+        "safeFields": [
+          "errorCode",
+          "message"
+        ]
+      }
+    }
   }
 }
