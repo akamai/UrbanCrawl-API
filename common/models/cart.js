@@ -383,7 +383,7 @@ module.exports = function(Cart) {
           },
         ],
         returns: {
-          arg: 'item',
+          arg: 'items',
           description: 'Returns an HTTP 200, and all the cart items, if everything goes well',
           type: 'any',
         },

@@ -908,6 +908,9 @@ definitions:
       createdate:
         type: string
         example: '2018-08-20T00:00:00.000Z'
+      cityname:
+        type: string
+        example: Boston
     additionalProperties: false
   errorResponse:
     properties:
