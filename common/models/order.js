@@ -181,7 +181,7 @@ module.exports = function(Order) {
               for (var i in orders) {
                 orders[i].cityname = cityDetails[orders[i].cityid].name;
               }
-              cb(null, {'items': orders});
+              cb(null, orders);
             } else {
               console.log('Order : returnOrdersByUserId : Some error in fetching all the cities', err);
             }
