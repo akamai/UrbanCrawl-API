@@ -165,8 +165,27 @@ module.exports = function(Order) {
       where: whereClause,
       fields: {orderid: true, cityid: true, thumburl: true, quantity: true, totalprice: true, createdate: true}},
       function(err, orders) {
+        var cityDetails = [];
         if (!err) {
-          cb(null, orders);
+          // Fetching city details for each of the cart items
+          var City = app.models.City;
+          City.find({
+            fields: {id: true, name: true},
+          }, function(err, cityResults) {
+            if (!err) {
+              for (var j in cityResults) {
+                cityDetails['' + cityResults[j].id] = {
+                  name: cityResults[j].name,
+                };
+              }
+              for (var i in orders) {
+                orders[i].cityname = cityDetails[orders[i].cityid].name;
+              }
+              cb(null, {'items': orders});
+            } else {
+              console.log('Order : returnOrdersByUserId : Some error in fetching all the cities', err);
+            }
+          });
         } else {
           console.log('Order : returnOrdersByUserId : error: Order.find: ', err);
           var error = new Error();
