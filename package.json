@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "bcrypt": "^2.0.1",
+    "bluebird": "^3.5.2",
     "compression": "^1.7.2",
     "cors": "^2.5.2",
     "edgegrid": "^3.0.4",
