@@ -27,50 +27,56 @@ module.exports = function(Order) {
    */
   Order.checkout = function(userId, cb) {
     var Cart = app.models.Cart;
+    console.log('ORDER: Going to checkout');
     Cart.find({where: {userid: userId},
     },
       function(err, cartItems) {
         if (!err) {
           if (cartItems.length > 0) {
             // Proceed only if there were items in cart from the supplied userid
-            var orderid = Date.now();
+            var orderArr = [];
+            var index = 1;
             for (var item of cartItems) {
+              var orderid = (Date.now()) + '' + index;
               var createdate = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-              Order.create({
+              orderArr.push({
                 orderid: orderid, cityid: item.cityid, userid: item.userid,
                 thumburl: item.thumburl, unitprice: item.unitprice,
                 quantity: item.quantity, totalprice: item.totalprice,
                 createdate: createdate, updatedate: createdate,
-              },
-                function(err, createResult) {
-                  if (!err) {
-                    console.log('ORDER: Create Order Result: ', createResult);
-                    console.log('ORDER : Order Id: ', orderid);
-                    // Order made, delete these items from cart
-                    Cart.destroyAll({userid: userId},
-                      function(err, result) {
-                        if (!err) {
-                          console.log('ORDER : Cart Delete: ', result);
-                          returnOrdersByUserId(userId, orderid, cb);
-                        } else {
-                          console.log('Order : checkout : error: Cart.destroyAll: ', err);
-                          var error = new Error();
-                          error.message = 'Something went wrong and we couldn\'t clear your cart. Your order, however, has went through, check your account. Write to us if this persists';
-                          error.errorCode = 'PARTIALLY_COMPLETE';
-                          error.status = 206;
-                          cb(error, null);
-                        }
-                      });
-                  } else {
-                    console.log('Order : checkout : error: Order.create: ', err);
-                    var error = new Error();
-                    error.message = 'Something went wrong and we couldn\'t create your order. Your order, however, has went through, check your account. Write to us if this persists';
-                    error.errorCode = 'PARTIALLY_COMPLETE';
-                    error.status = 206;
-                    cb(error, null);
-                  }
-                });
+              });
+              console.log('ORDER: pushed item in orderArr : item, orderid ', item, orderid);
+              index++;
             }
+            Order.create(orderArr,
+              function(err, createResult) {
+                if (!err) {
+                  console.log('ORDER: Create Order Result: ', createResult);
+                  // Order made, delete these items from cart
+                  Cart.destroyAll({userid: userId},
+                    function(err, result) {
+                      if (!err) {
+                        console.log('ORDER : Cart Delete: ', result);
+                        returnOrdersByUserId(userId, undefined, cb);
+                      } else {
+                        console.log('Order : checkout : error: Cart.destroyAll: ', err);
+                        var error = new Error();
+                        error.message = 'Something went wrong and we couldn\'t clear your cart. Your order, however, has went through, check your account. Write to us if this persists';
+                        error.errorCode = 'PARTIALLY_COMPLETE';
+                        error.status = 206;
+                        cb(error, null);
+                      }
+                    });
+                } else {
+                  console.log('Order : checkout : error: Order.create: ', err);
+                  var error = new Error();
+                  error.message = 'Something went wrong and we couldn\'t create your order. Your order, however, has went through, check your account. Write to us if this persists';
+                  error.errorCode = 'PARTIALLY_COMPLETE';
+                  error.status = 206;
+                  cb(error, null);
+                }
+              });
+            // }
           } else {
             console.log('Order : checkout : error: No orders for the given userid ', userId);
             var error = new Error();
