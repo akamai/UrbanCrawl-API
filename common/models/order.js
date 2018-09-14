@@ -35,7 +35,9 @@ module.exports = function(Order) {
           if (cartItems.length > 0) {
             // Proceed only if there were items in cart from the supplied userid
             var orderArr = [];
+            var orderIdsArr = [];
             var index = 1;
+            // creating an array of all the items to push on Order model at once
             for (var item of cartItems) {
               var orderid = (Date.now()) + '' + index;
               var createdate = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
@@ -45,9 +47,11 @@ module.exports = function(Order) {
                 quantity: item.quantity, totalprice: item.totalprice,
                 createdate: createdate, updatedate: createdate,
               });
+              orderIdsArr.push({orderid: orderid});
               console.log('ORDER: pushed item in orderArr : item, orderid ', item, orderid);
               index++;
             }
+            // Creating a bulk order with all the values pushed into an array from the last step
             Order.create(orderArr,
               function(err, createResult) {
                 if (!err) {
@@ -57,7 +61,7 @@ module.exports = function(Order) {
                     function(err, result) {
                       if (!err) {
                         console.log('ORDER : Cart Delete: ', result);
-                        returnOrdersByUserId(userId, undefined, cb);
+                        returnOrdersByUserId(userId, orderIdsArr, cb);
                       } else {
                         console.log('Order : checkout : error: Cart.destroyAll: ', err);
                         var error = new Error();
@@ -160,11 +164,11 @@ module.exports = function(Order) {
     });
   };
 
-  var returnOrdersByUserId = function(userId, orderId, cb) {
-    if (orderId === undefined) {
+  var returnOrdersByUserId = function(userId, orderIds, cb) {
+    if (orderIds === undefined) {
       var whereClause = {userid: userId};
     } else {
-      var whereClause = {userid: userId, orderid: orderId};
+      var whereClause = {or: orderIds};
     }
 
     Order.find({
