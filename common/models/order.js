@@ -176,16 +176,18 @@ module.exports = function(Order) {
           // Fetching city details for each of the cart items
           var City = app.models.City;
           City.find({
-            fields: {id: true, name: true},
+            fields: {id: true, name: true, description: true},
           }, function(err, cityResults) {
             if (!err) {
               for (var j in cityResults) {
                 cityDetails['' + cityResults[j].id] = {
                   name: cityResults[j].name,
+                  description: cityResults[j].description,
                 };
               }
               for (var i in orders) {
                 orders[i].cityname = cityDetails[orders[i].cityid].name;
+                orders[i].description = cityDetails[orders[i].cityid].description;
               }
               cb(null, orders);
             } else {
