@@ -911,6 +911,9 @@ definitions:
       cityname:
         type: string
         example: Boston
+      description:
+        type: string
+        example: Boston is one of the oldest cities in the United States, founded on the Shawmut Peninsula in 1630 by Puritan settlers from England.\nIt was the scene of several key events of the American Revolution, such as the Boston Massacre, the Boston Tea Party, the Battle of Bunker Hill, and the Siege of Boston
     additionalProperties: false
   errorResponse:
     properties:
