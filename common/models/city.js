@@ -323,8 +323,8 @@ City.getMediaOfCity = function(cityId, type, cb) {
 
     City.getCurrentCity = function(req, cb) {
         let parameters = {};
-        if (req.headers["x-akamai-edgescape"] && req.headers["x-akamai-edgescape"].indexOf(',') !== -1) {
-            const header = req.headers["x-akamai-edgescape"];
+        if (req.headers["X-Akamai-EdgeScape"] && req.headers["X-Akamai-EdgeScape"].indexOf(',') !== -1) {
+            const header = req.headers["X-Akamai-EdgeScape"];
             let itemsArray = [];
             itemsArray = header.split(',');
             itemsArray.forEach(function (part) {
@@ -342,7 +342,7 @@ City.getMediaOfCity = function(cityId, type, cb) {
                 parameters[key] = value
             });
         }
-        
+
         if (parameters['city'] && parameters['city'].length > 0) {
             let currentCity = parameters['city'];
             City.findOne({where: {name: currentCity}}, function (err, res) {
