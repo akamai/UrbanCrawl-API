@@ -553,4 +553,68 @@ module.exports = function(City) {
       },
     }
   );
+
+  // ------------- Parse EdgeScape Header -------------
+  /**
+   * @author dshafik
+   */
+
+  City.getCurrentCity = function(req, cb) {
+    let parameters = {};
+    if (req.headers['x-akamai-edgescape'] && req.headers['x-akamai-edgescape'].indexOf(',') !== -1) {
+      const header = req.headers['x-akamai-edgescape'];
+      let itemsArray = [];
+      itemsArray = header.split(',');
+      itemsArray.forEach(function(part) {
+        let equalsIndex = part.indexOf('=');
+        let key, value;
+        if (equalsIndex === -1) {
+          key = part.trim();
+          value = '';
+        } else {
+          key = part.substring(0, equalsIndex).trim();
+          value = part.substring(equalsIndex + 1);
+        }
+        key = decodeURIComponent(key);
+        value = decodeURIComponent(value);
+        parameters[key] = value;
+      });
+    }    
+
+    if (parameters['city'] && parameters['city'].length > 0) {
+      let currentCity = parameters['city'];
+      City.findOne({where: {name: currentCity}}, function(err, res) {
+        if (err) {
+          cb(null, null);
+          return;
+        }
+        currentCity = res;
+        cb(null, res);
+      });
+    } else {
+      cb(null, null);
+    }
+  };
+
+  City.remoteMethod(
+    'getCurrentCity', {
+      http: {
+        path: '/current',
+        verb: 'get',
+      },
+      accepts: [
+        {
+          arg: 'req',
+          type: 'object',
+          http: {source: 'req'},
+        },
+      ],
+      returns: {
+        arg: 'city',
+        description: 'Returns a JSON object containing details and places of the users current city',
+        type: ['city'],
+        root: true,
+      },
+    }
+);
 };

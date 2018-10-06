@@ -56,7 +56,8 @@
           "getPlaceDetails": true,
           "getPlacesOfCity": true,
           "getMediaOfPlace": true,
-          "getMediaOfCity": true
+          "getMediaOfCity": true,
+          "getCurrentCity": true
         }
       }
     }
