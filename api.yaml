@@ -1,0 +1,963 @@
+swagger: '2.0'
+info:
+  version: 2.0.0
+  title: '@akamai/urbancrawl-api'
+basePath: /api/v2
+paths:
+  /account:
+    put:
+      summary: Creates a new user account
+      tags:
+        - account
+      operationId: account.register
+      parameters:
+        - in: body
+          name: items
+          required: false
+          description: 'Required fields for registration are email, full name and password of the user, sent in the body of the PUT request'
+          schema:
+            $ref: '#/definitions/registerAccountRequest'
+      responses:
+        '200':
+          description: |-
+            Account registration was successful. The API responds with the authToken, and a time to live (ttl, in seconds) value, which denotes how long this token is valid for.
+            Once the token expires, you'll have to ask the user to log in again
+
+            If the provided email id has already been used, the HTTP 200 response says "error" instead of ok, in status
+          schema:
+            type: object
+            properties:
+              token:
+                $ref: '#/definitions/tokenResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+    post:
+      summary: Logs a user in
+      tags:
+        - account
+      operationId: account.login
+      parameters:
+        - in: body
+          name: items
+          required: false
+          description: 'Send the email id and password of the registered users to log them in, and receive auth tokens'
+          schema:
+            $ref: '#/definitions/loginRequest'
+      responses:
+        '200':
+          description: Request was successful
+          schema:
+            type: object
+            properties:
+              token:
+                $ref: '#/definitions/tokenResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+    get:
+      summary: 'Get details of the authorized user, used to display the profile information in ''My Account'' area'
+      tags:
+        - account
+      operationId: account.getProfile
+      parameters:
+        - in: header
+          name: Authorization
+          description: 'Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user''s account and cart. Obtain this token by either registering or logging in'
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        '200':
+          description: Successfully retrieved the details of the authorized user
+          schema:
+            type: object
+            properties:
+              result:
+                $ref: '#/definitions/profileResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, incorrect Authorization etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /account/update:
+    post:
+      summary: Updates the authorized user's details
+      tags:
+        - account
+      operationId: account.updateProfile
+      parameters:
+        - in: header
+          name: Authorization
+          description: 'Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user''s account and cart. Obtain this token by either registering or logging in'
+          type: string
+          required: true
+        - in: body
+          name: items
+          required: false
+          description: 'Whatever fields you send here, will be updated for the user whose auth Token is being sent in the header. You can send just one of the field to update only that, or all of them'
+          schema:
+            $ref: '#/definitions/registerAccountRequest'
+      security:
+        - AuthHeader: []
+      responses:
+        '200':
+          description: Returns the updated details of the authorized user once done
+          schema:
+            type: object
+            properties:
+              result:
+                $ref: '#/definitions/profileResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, incorrect Authorization etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /cart:
+    post:
+      summary: 'Adds a single city to the cart of the authorized user, expects you to send the authToken of the user in the header.'
+      tags:
+        - cart
+      operationId: cart.addToCart
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: itemBody
+          description: |-
+            Details of the city and it's quanity to add. The user for which this city needs to be added, will be deduced from the authToken that you send in the header. Check the required header values for this API.
+            Also used to update the existing items (mainly quantity) in the cart. If you send a cityId which already exists, it's quantity, and thus it's total price will be updated.
+
+            To delete an item, send the quantity as 0
+          schema:
+            $ref: '#/definitions/cartRequest'
+        - in: header
+          name: Authorization
+          description: 'Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user''s account and cart. Obtain this token by either registering or logging in'
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        '200':
+          description: 'If the city is successfully added to the authorized user''s cart, all the items of the user''s cart are returned'
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/cartResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+    get:
+      summary: Returns all the items present in the authorized user's cart. Returns an empty array if there are no items present
+      tags:
+        - cart
+      operationId: cart.getCart
+      parameters:
+        - in: header
+          name: Authorization
+          description: 'Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user''s account and cart. Obtain this token by either registering or logging in'
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        '200':
+          description: Returns all the items present in the currently authorized user's cart. Returns an empty 'items' array if the cart is empty
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/cartResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /cart/checkout:
+    put:
+      summary: 'Initiates checkout process for the authorized user. During this process, an order is created, all the items in the cart of the authorized users are added to this order, and these items are deleted from the user''s cart. The response is the order details.'
+      tags:
+        - cart
+      operationId: cart.checkout
+      parameters:
+        - in: header
+          name: Authorization
+          description: 'Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user''s account and cart. Obtain this token by either registering or logging in'
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        '200':
+          description: 'Returns the items in the order, when the request was successful'
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/orderResponse'
+        '206':
+          description: |-
+            The code of HTTP 206 indicates that an error has occured during the operation which prevented from the whole operation from going through.
+            Typical examples are, the order went through but the cart couldn't be cleared. Or, the order was taken, but the correct response couldn't be sent. You should read the error response object, defined later for this endpoint, to understand the cause
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /cities:
+    get:
+      summary: Returns all the cities available in the database
+      tags:
+        - city
+      operationId: city.getAllCities
+      parameters: []
+      responses:
+        '200':
+          description: 'Returns a JSON array of all the available cities, mainly to use in listing all the Cities'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/cityList'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  '/cities/{cityId}':
+    get:
+      summary: 'Returns details of the city, and all the places that belong to the city, whose ID is supplied'
+      tags:
+        - city
+      operationId: city.getCityDetails
+      parameters:
+        - name: cityId
+          in: path
+          required: true
+          type: number
+          format: double
+      responses:
+        '200':
+          description: Returns a JSON object containing details and places of a city whose ID is supplied
+          schema:
+            $ref: '#/definitions/city'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  '/cities/{cityId}/media/{type}':
+    get:
+      summary: 'Returns all the media that belongs to this cityid, including media of Places'
+      tags:
+        - city
+      operationId: city.getMediaOfCity
+      parameters:
+        - name: cityId
+          in: path
+          required: true
+          type: number
+          format: double
+          description: ID of the city whose media is requested
+        - name: type
+          in: path
+          required: true
+          type: string
+          description: 'accepted values are either ''image'' or ''video'', denoting the media type that you want'
+      responses:
+        '200':
+          description: 'Request was successful, the response is a list of all the media that belongs to this city'
+          schema:
+            description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied'
+            type: array
+            items:
+              $ref: '#/definitions/mediaResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  '/cities/{cityId}/places/{placeId}/media/{type}':
+    get:
+      summary: Returns all the media of the place that belongs to the placeId provided.
+      tags:
+        - city
+      operationId: city.getMediaOfPlace
+      parameters:
+        - name: cityId
+          in: path
+          required: true
+          type: number
+          format: double
+          description: ID of the city whose Place's media is requested
+        - name: placeId
+          in: path
+          required: true
+          type: number
+          format: double
+          description: ID of the place whose media is requested
+        - name: type
+          in: path
+          required: true
+          type: string
+          description: 'accepted values are either ''image'' or ''video'', denoting the media type that you want'
+      responses:
+        '200':
+          description: 'The request was successful, the response is a list of all the media that belongs to this city'
+          schema:
+            description: 'Returns a JSON array of all the available places, belonging to the city whose id is supplied'
+            type: array
+            items:
+              $ref: '#/definitions/mediaResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  '/cities/{cityId}/places':
+    get:
+      summary: Returns all the places that belong to the city whose ID is supplied
+      tags:
+        - city
+      operationId: city.getPlacesOfCity
+      parameters:
+        - name: cityId
+          description: the city's id whose places are required
+          in: path
+          required: true
+          type: number
+          format: double
+      responses:
+        '200':
+          description: Returns a JSON array containing all the places of a city whose ID is supplied
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/placeListResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  '/cities/{cityId}/places/{placeId}':
+    get:
+      summary: Returns the place details of the Place whose ID is supplied
+      tags:
+        - city
+      operationId: city.getPlaceDetails
+      parameters:
+        - name: cityId
+          description: the city's id to which the required place belongs
+          in: path
+          required: true
+          type: number
+          format: double
+        - name: placeId
+          description: the place id whose details are required
+          in: path
+          required: true
+          type: number
+          format: double
+      responses:
+        '200':
+          description: Returns a JSON object containing all the places of a city whose ID is supplied
+          schema:
+            $ref: '#/definitions/placeResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /cities/search:
+    get:
+      summary: Returns search results after searching for the given keyword in Cities and Places
+      tags:
+        - city
+      operationId: city.search
+      parameters:
+        - name: query
+          in: query
+          required: true
+          type: string
+          description: Search keyword
+        - name: page
+          in: query
+          required: false
+          type: number
+          format: double
+          description: Optional. Default is 1
+      responses:
+        '200':
+          description: |-
+            Returns a JSON array of all the available Cities and Places that match the supplied keyword, along with meta information about pagination.
+            If no cities match the keyword, returns all the matching places.
+
+            Also returns the count of elements in the current result, the current page number (currPage), and the next page number (nextPage).
+
+            If there are no further pages available, nextPage is null.
+
+            If you search for a pageNumber which doesn't fetch any data, you get an empty JSON array in results section
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/searchResults'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /cities/current:
+    get:
+      summary: 'Accepts the `x-akamai-edgescape` header, and returns the city closest to the one contained in the header'
+      tags:
+        - city
+      operationId: city.current
+      parameters:
+        - in: header
+          name: x-akamai-edgescape
+          description: The header with the data from which city name is extracted
+          type: string
+          required: true
+      responses:
+        '200':
+          description: 'Returns the City that was found, based on the value which was sent in the header. Returns ''null'' if the given city was not found.'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/city'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  /orders:
+    get:
+      summary: Lists all the orders made by the authorized user (The user whose access token is supplied)
+      tags:
+        - order
+      operationId: order.getAllOrders
+      parameters:
+        - in: header
+          name: Authorization
+          description: 'Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user''s account and cart. Obtain this token by either registering or logging in'
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        '200':
+          description: Lists all the orders of the user whose auth token was supplied. Returns an empty
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/orderResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+  '/orders/{orderId}':
+    delete:
+      summary: 'Deletes the order whose id is provided, from the order history of the authorized user'
+      tags:
+        - order
+      operationId: order.deleteOrderByID
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          type: string
+          description: The order ID to be deleted.
+        - in: header
+          name: Authorization
+          description: 'Send an "Authorization [accessToken]" with this request, using which the web service will find out the authorized user, and take action on this user''s account and cart. Obtain this token by either registering or logging in'
+          type: string
+          required: true
+      security:
+        - AuthHeader: []
+      responses:
+        '200':
+          description: 'If the given order id was deleted successfully, returns a list of all the orders by the authorized user'
+          schema:
+            type: object
+            properties:
+              items:
+                $ref: '#/definitions/orderResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
+definitions:
+  registerAccountRequest:
+    properties:
+      email:
+        type: string
+        example: foo@bar.com
+      password:
+        type: string
+        example: foobar
+      full_name:
+        type: string
+        example: Foo Bar
+    additionalProperties: false
+  loginRequest:
+    properties:
+      email:
+        type: string
+        example: foo@bar.com
+      password:
+        type: string
+        example: foobar
+    additionalProperties: false
+  profileResponse:
+    properties:
+      userid:
+        type: string
+        example: 3ebc3000-8a74-11e8-9dfc6d8d560a
+      email:
+        type: string
+        example: foo@bar.com
+      full_name:
+        type: string
+        example: Foo Bar
+    additionalProperties: false
+  tokenResponse:
+    properties:
+      status:
+        type: string
+        example: ok
+      token:
+        type: string
+        example: 9d7ce24c4dab044ecf8b40c114fb71b1718f8a19af12252afb7a
+      expires_in_seconds:
+        type: number
+        format: integer
+        example: 604800
+    additionalProperties: false
+  cartRequest:
+    properties:
+      cityid:
+        type: number
+        format: double
+        example: 44
+      qty:
+        type: number
+        format: double
+        example: 2
+    additionalProperties: false
+  cartResponse:
+    properties:
+      cityid:
+        type: number
+        format: double
+        example: 44
+      thumburl:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/Boston-Skyline-iStock-469769544.jpg'
+      quantity:
+        type: number
+        format: double
+        example: 2
+      totalprice:
+        type: number
+        format: double
+        example: 50
+      cityname:
+        type: string
+        example: Boston
+      description:
+        type: string
+        example: Boston is one of the oldest cities in the United States..
+    additionalProperties: false
+  cityList:
+    properties:
+      name:
+        type: string
+        example: Boston
+      countryname:
+        type: string
+        example: USA
+      lat:
+        type: number
+        format: double
+        example: 42.3144
+      lng:
+        type: number
+        format: double
+        example: -70.9703
+      thumburl:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/Boston-Skyline-iStock-469769544.jpg'
+      description:
+        type: string
+        example: 'Boston is one of the oldest cities in the United States, founded on the Shawmut Peninsula in 1630 by Puritan settlers from England.\nIt was the scene of several key events of the American Revolution, such as the Boston Massacre, the Boston Tea Party, the Battle of Bunker Hill, and the Siege of Boston'
+      heroimage:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/Harvard/Harvard-iStock-182874107.jpg'
+      tour_price:
+        type: number
+        format: double
+        example: 25
+      id:
+        type: number
+        format: integer
+        example: 44
+    additionalProperties: false
+  city:
+    properties:
+      name:
+        type: string
+      countryname:
+        type: string
+      lat:
+        type: number
+        format: double
+      lng:
+        type: number
+        format: double
+      thumburl:
+        type: string
+      description:
+        type: string
+      heroimage:
+        type: string
+      budget:
+        type: string
+      besttime:
+        type: string
+      language:
+        type: string
+      population:
+        type: string
+      traveladvice:
+        type: string
+      currency:
+        type: string
+      tour_price:
+        type: number
+        format: double
+      id:
+        type: number
+        format: double
+      places:
+        type: array
+        items:
+          $ref: '#/definitions/place'
+    additionalProperties: false
+  searchResults:
+    properties:
+      currPage:
+        type: number
+        format: integer
+        example: 1
+      nextPage:
+        type: number
+        format: integer
+        example: null
+      count:
+        type: number
+        format: integer
+        example: 5
+      results:
+        type: array
+        items:
+          properties:
+            name:
+              type: string
+              example: Boston
+            countryname:
+              type: string
+              example: USA
+            lat:
+              type: number
+              format: double
+              example: 42.3144
+            lng:
+              type: number
+              format: double
+              example: -70.9703
+            thumburl:
+              type: string
+              example: 'http://static.urbancrawlapp.com/img/Boston/Boston-Skyline-iStock-469769544.jpg'
+            description:
+              type: string
+              example: Boston is one of the oldest cities in the United States...
+            heroimage:
+              type: string
+              example: 'http://static.urbancrawlapp.com/img/Boston/Harvard/Harvard-iStock-182874107.jpg'
+            tour_price:
+              type: number
+              format: double
+              example: 25
+            id:
+              type: number
+              format: integer
+              example: 44
+            type:
+              type: string
+              example: city | place
+    additionalProperties: false
+  mediaResponse:
+    properties:
+      id:
+        type: number
+        format: integer
+        example: 81
+      url:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/AcornStreet/Acorn-Street-iStock-497250190.jpg'
+      type:
+        type: string
+        example: image
+      cityid:
+        type: number
+        format: integer
+        example: 44
+      placeid:
+        type: number
+        format: integer
+        example: 34
+      caption:
+        type: string
+        example: null
+    additionalProperties: false
+  place:
+    properties:
+      name:
+        type: string
+      heroimage:
+        type: string
+      herovideo:
+        type: string
+      thumburl:
+        type: string
+      description:
+        type: string
+      numimages:
+        type: number
+        format: integer
+      timings:
+        type: string
+      tour_price:
+        type: number
+        format: double
+      id:
+        type: number
+        format: double
+        example: 34
+      cityId:
+        type: number
+        format: double
+        example: 44
+    additionalProperties: false
+  placeListResponse:
+    properties:
+      name:
+        type: string
+        example: Acorn Street
+      heroimage:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/AcornStreet/Acorn-Street-iStock-497250190.jpg'
+      herovideo:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/AcornStreet/Acorn-Street-iStock-497250190.jpg'
+      description:
+        type: string
+        example: 'Nearby Louisburg Square, \"the most prestigious address\" in Beacon Hill, is Acorn Street, often mentioned as the \"most frequently photographed street in the United States.'
+      numimages:
+        type: number
+        format: integer
+        example: 3
+      timings:
+        type: string
+        example: Mon-Fri
+      id:
+        type: number
+        format: double
+        example: 34
+      cityId:
+        type: number
+        format: double
+        example: 44
+    additionalProperties: false
+  placeResponse:
+    properties:
+      name:
+        type: string
+        example: Acorn Street
+      heroimage:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/AcornStreet/Acorn-Street-iStock-497250190.jpg'
+      herovideo:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/AcornStreet/Acorn-Street-iStock-497250190.jpg'
+      description:
+        type: string
+        example: 'Nearby Louisburg Square, \"the most prestigious address\" in Beacon Hill, is Acorn Street, often mentioned as the \"most frequently photographed street in the United States.'
+      numimages:
+        type: number
+        format: integer
+        example: 3
+      timings:
+        type: string
+        example: Mon-Fri
+      id:
+        type: number
+        format: double
+        example: 34
+      cityId:
+        type: number
+        format: double
+        example: 44
+    additionalProperties: false
+  orderResponse:
+    properties:
+      cityid:
+        type: number
+        format: double
+        example: 44
+      thumburl:
+        type: string
+        example: 'http://static.urbancrawlapp.com/img/Boston/Boston-Skyline-iStock-469769544.jpg'
+      quantity:
+        type: number
+        format: double
+        example: 2
+      totalprice:
+        type: number
+        format: double
+        example: 50
+      orderid:
+        type: string
+        example: '1534783640582'
+      createdate:
+        type: string
+        example: '2018-08-20T00:00:00.000Z'
+      cityname:
+        type: string
+        example: Boston
+    additionalProperties: false
+  errorResponse:
+    properties:
+      statusCode:
+        type: number
+        format: integer
+        example: 401
+      name:
+        type: string
+        example: Error
+      message:
+        type: string
+        example: Authorization Required
+      errorCode:
+        type: string
+        example: AUTH_REQUIRED
+    additionalProperties: false
+securityDefinitions:
+  AuthHeader:
+    type: apiKey
+    in: header
+    name: Authorization
