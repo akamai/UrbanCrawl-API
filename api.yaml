@@ -590,6 +590,28 @@ paths:
               error:
                 $ref: '#/definitions/errorResponse'
       deprecated: false
+  '/test':
+    get:
+      summary: 'Greets you with Hello'
+      tags:
+        - test
+      operationId: test.printHello
+      responses:
+        '200':
+          description: 'Greets with Hello, World! if everything went successfully'
+          schema:
+            type: object
+            $ref: '#/definitions/testResponse'
+        '400':
+          description: 'The code of HTTP 400 range indicates that an error has occured, related to resources (e.g. Resource not being found, Authorization being unsuccessful etc.). You should read the error response object, defined later for this endpoint, to understand the cause'
+        '500':
+          description: The code of HTTP 500 range indicates that some server error has occurred. Read the error response object to understand the cause.
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/definitions/errorResponse'
+      deprecated: false
 definitions:
   registerAccountRequest:
     properties:
@@ -955,6 +977,12 @@ definitions:
       errorCode:
         type: string
         example: AUTH_REQUIRED
+    additionalProperties: false
+  testResponse:
+    properties:
+      result:
+        type: string
+        example: 'Hello, World!'
     additionalProperties: false
 securityDefinitions:
   AuthHeader:
