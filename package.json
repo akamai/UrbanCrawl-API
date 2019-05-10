@@ -16,7 +16,7 @@
     "posttest": "npm run lint && nsp check"
   },
   "dependencies": {
-    "bcrypt": "^2.0.1",
+    "bcrypt": "^3.0.6",
     "compression": "^1.7.2",
     "cors": "^2.5.2",
     "edgegrid": "^3.0.4",
